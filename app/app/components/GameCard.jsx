@@ -47,19 +47,24 @@ export default function GameCard({ game }) {
   const aColor = isLive || isFinal ? (aWin ? g.awayColor : '#ccc') : '#ccc';
   const hColor = isLive || isFinal ? (hWin ? g.homeColor : '#ccc') : '#ccc';
 
-  let borderClass = 'bg-white rounded-xl border transition-all duration-300';
+  let borderClass = 'bg-white rounded-xl transition-all duration-300';
+  let alertColor = null;
   if (g.bluffing) {
-    borderClass += ' border-[#C0392B] shadow-[0_0_0_2px_#C0392B]';
+    alertColor = '#C0392B';
   } else if (g.comeback) {
-    borderClass += ' border-[#00C853] shadow-[0_0_0_2px_#00C853]';
+    alertColor = '#00C853';
   } else if (g.swingWarning) {
-    borderClass += ' border-[#FFD700] shadow-[0_0_0_2px_#FFD700]';
-  } else {
-    borderClass += ' border-[#e0e0e0]';
+    alertColor = '#FFD700';
   }
 
   return (
-    <div className={`${borderClass} game-card-pad`}>
+    <div className={`${borderClass} game-card-pad`} style={{
+      padding: '12px',
+      borderRadius: '12px',
+      border: alertColor ? `3px solid ${alertColor}` : '1px solid #e0e0e0',
+      borderTop: alertColor ? `3px solid ${alertColor}` : `3px solid ${g.homeColor || '#dce6f0'}`,
+      boxShadow: alertColor ? `0 0 0 3px ${alertColor}40` : '0 1px 3px rgba(0,0,0,0.08)',
+    }}>
       {/* Top bar */}
       <div className="pb-3 mb-3 border-b border-black/5 flex justify-between items-center">
         <span className="text-sm font-semibold text-[#6b7c93]">

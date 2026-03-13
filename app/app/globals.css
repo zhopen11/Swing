@@ -86,11 +86,19 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 0.875rem;
+  padding: 6px;
 }
 
 /* --- Game card --- */
 .game-card-pad {
   padding: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.game-card-pad:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
 }
 
 .score-num {
@@ -112,6 +120,7 @@ body {
 /* --- Section padding (live games container) --- */
 .section-pad {
   padding: 20px;
+  overflow: visible;
 }
 
 /* --- Main content --- */
