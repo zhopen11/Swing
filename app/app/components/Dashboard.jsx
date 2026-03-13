@@ -320,11 +320,35 @@ export default function Dashboard() {
             Refreshes every 20s
           </span>
         </div>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ width: '1px', height: '24px', background: '#dce6f0' }} />
+          <button
+            onClick={() => setFilter('CLV')}
+            className={`border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-150 ${
+              filter === 'CLV'
+                ? 'bg-[#001c55] text-white'
+                : 'bg-transparent text-[#001c55] hover:bg-[#dce6f0]'
+            }`}
+            style={{ padding: '6px 12px' }}
+          >
+            CLV
+          </button>
+        </div>
       </div>
 
       {/* Main content */}
       <main className="main-content">
-        {loading ? (
+        {filter === 'CLV' ? (
+          <div className="text-center" style={{ padding: '60px 20px' }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
+            <div className="text-xl font-bold text-[#001c55]" style={{ marginBottom: '8px' }}>
+              Closing Line Value
+            </div>
+            <div className="text-base text-[#6b7c93]">
+              Coming soon — track CLV across live and completed games.
+            </div>
+          </div>
+        ) : loading ? (
           <div className="text-center py-16 text-base text-[#6b7c93]">
             Loading The Swing&hellip;
           </div>

@@ -183,7 +183,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                     g.awayColor,
                     g.homeColor,
                   );
-                  return <span style={{ color: s.color, fontWeight: 800 }}>{s.text}</span>;
+                  return <span className={s.text !== 'EVEN' ? 'animate-heartbeat' : ''} style={{ color: s.color, fontWeight: 800 }}>{s.text}</span>;
                 })()}
               </div>
               <div className="flex-1 h-2.5 bg-[#ebebeb] rounded-full overflow-hidden relative">
