@@ -34,13 +34,14 @@ function swingLabel(away, home, awayAbbr, homeAbbr, awayColor, homeColor) {
   return { text: `${leader} SWING`, color };
 }
 
-export default function GameCard({ game }) {
+export default function GameCard({ game, user, subscribedGames, onToggleSubscribe, onRequestAuth }) {
   const g = game;
   const isLive = LIVE_STATUSES.has(g.status);
   const isFinal = g.status === 'STATUS_FINAL';
   const isPre = g.status === 'STATUS_SCHEDULED';
   const hasMom = !!g.mom;
   const clockDisplay = g.status === 'STATUS_HALFTIME' ? 'HALFTIME' : g.clock;
+  const isSubscribed = user && subscribedGames && subscribedGames.includes(g.id);
 
   const aWin = g.awayScore > g.homeScore;
   const hWin = g.homeScore > g.awayScore;
@@ -70,20 +71,39 @@ export default function GameCard({ game }) {
         <span className="text-sm font-semibold text-[#6b7c93]">
           {g.league} &middot; {g.shortName || g.name}
         </span>
-        {isLive && (
-          <span className="text-sm font-bold text-[#C0392B] flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
-            {periodLabel(g.period)} &middot; <span className="font-mono">{clockDisplay}</span>
-          </span>
-        )}
-        {isFinal && (
-          <span className="text-sm font-bold text-[#6b7c93]">FINAL</span>
-        )}
-        {isPre && (
-          <span className="text-sm font-bold text-[#6b7c93]">
-            <span className="font-mono">{formatTime(g.date)}</span>
-          </span>
-        )}
+        <div className="flex items-center" style={{ gap: '8px' }}>
+          {isLive && (
+            <span className="text-sm font-bold text-[#C0392B] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
+              {periodLabel(g.period)} &middot; <span className="font-mono">{clockDisplay}</span>
+            </span>
+          )}
+          {isFinal && (
+            <span className="text-sm font-bold text-[#6b7c93]">FINAL</span>
+          )}
+          {isPre && (
+            <span className="text-sm font-bold text-[#6b7c93]">
+              <span className="font-mono">{formatTime(g.date)}</span>
+            </span>
+          )}
+          <button
+            onClick={() => user ? onToggleSubscribe(g.id) : onRequestAuth && onRequestAuth()}
+            title={user ? (isSubscribed ? 'Unsubscribe from alerts' : 'Subscribe to alerts') : 'Sign up for alerts'}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '2px',
+              lineHeight: '1',
+              transition: 'opacity 0.2s',
+              opacity: !user ? 0.5 : 1,
+            }}
+          >
+            <svg width="28" height="28" viewBox="0 0 24 24" fill={user && isSubscribed ? '#00C853' : '#c0c7d0'} xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Score row */}

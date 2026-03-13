@@ -21,12 +21,41 @@ export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [otd, setOtd] = useState(null);
   const [user, setUser] = useState(null);
+  const [subscribedGames, setSubscribedGames] = useState([]);
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
   const timerRef = useRef(null);
   const clockRef = useRef(null);
   const finalTimestamps = useRef({});
   const seenLive = useRef(new Set());
+
+  const fetchSubscriptions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/subscriptions');
+      const data = await res.json();
+      setSubscribedGames(data.gameIds || []);
+    } catch {
+      setSubscribedGames([]);
+    }
+  }, []);
+
+  const handleToggleSubscribe = useCallback(async (gameId) => {
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gameId }),
+      });
+      const data = await res.json();
+      if (data.subscribed) {
+        setSubscribedGames((prev) => [...prev, gameId]);
+      } else {
+        setSubscribedGames((prev) => prev.filter((id) => id !== gameId));
+      }
+    } catch (err) {
+      console.error('Toggle subscribe failed:', err);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     try {
@@ -53,7 +82,12 @@ export default function Dashboard() {
       .catch(() => {});
     fetch('/api/auth/me')
       .then((r) => r.json())
-      .then((d) => d.user && setUser(d.user))
+      .then((d) => {
+        if (d.user) {
+          setUser(d.user);
+          fetchSubscriptions();
+        }
+      })
       .catch(() => {});
     return () => {
       clearInterval(timerRef.current);
@@ -65,6 +99,7 @@ export default function Dashboard() {
     try {
       await fetch('/api/auth/signout', { method: 'POST' });
       setUser(null);
+      setSubscribedGames([]);
     } catch (err) {
       console.error('Sign out failed:', err);
     }
@@ -313,7 +348,7 @@ export default function Dashboard() {
                 </div>
                 <div className="game-grid">
                   {live.map((g) => (
-                    <GameCard key={g.id} game={g} />
+                    <GameCard key={g.id} game={g} user={user} subscribedGames={subscribedGames} onToggleSubscribe={handleToggleSubscribe} onRequestAuth={() => openAuth('register-phone')} />
                   ))}
                   {/* Legend card */}
                   <div className="bg-white rounded-xl border border-[#dce6f0] flex flex-col justify-center" style={{ padding: '12px' }}>
@@ -364,7 +399,7 @@ export default function Dashboard() {
                 </div>
                 <div className="game-grid mb-10">
                   {final_.map((g) => (
-                    <GameCard key={g.id} game={g} />
+                    <GameCard key={g.id} game={g} user={user} subscribedGames={subscribedGames} onToggleSubscribe={handleToggleSubscribe} onRequestAuth={() => openAuth('register-phone')} />
                   ))}
                 </div>
               </>
@@ -380,7 +415,7 @@ export default function Dashboard() {
                 </div>
                 <div className="game-grid mb-10">
                   {pre.map((g) => (
-                    <GameCard key={g.id} game={g} />
+                    <GameCard key={g.id} game={g} user={user} subscribedGames={subscribedGames} onToggleSubscribe={handleToggleSubscribe} onRequestAuth={() => openAuth('register-phone')} />
                   ))}
                 </div>
               </>
@@ -397,7 +432,7 @@ export default function Dashboard() {
         <AuthModal
           mode={authMode}
           onClose={() => setShowAuth(false)}
-          onAuth={(u) => setUser(u)}
+          onAuth={(u) => { setUser(u); fetchSubscriptions(); }}
         />
       )}
     </div>
