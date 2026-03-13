@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tick, setTick] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [otd, setOtd] = useState(null);
   const timerRef = useRef(null);
   const clockRef = useRef(null);
 
@@ -36,6 +37,10 @@ export default function Dashboard() {
     fetchData();
     timerRef.current = setInterval(fetchData, REFRESH_MS);
     clockRef.current = setInterval(() => setCurrentTime(new Date()), 30000);
+    fetch('/api/otd')
+      .then((r) => r.json())
+      .then((d) => d.event && setOtd(d.event))
+      .catch(() => {});
     return () => {
       clearInterval(timerRef.current);
       clearInterval(clockRef.current);
@@ -93,14 +98,19 @@ export default function Dashboard() {
       style={{ fontFamily: "'DM Sans', sans-serif", color: '#222' }}
     >
       {/* Header */}
-      <header className="bg-[#001c55] border-b-[3px] border-[#1493ff] px-6 py-4 sticky top-0 z-[200] flex justify-between items-center">
+      <header className="bg-[#001c55] border-b-[3px] border-[#1493ff] sticky top-0 z-[200] flex justify-between items-center" style={{ padding: '14px 22px' }}>
         <div>
           <div className="text-sm tracking-[.12em] text-[#1493ff] mb-1 font-medium">
             THE SWING &middot; LIVE PLAY-BY-PLAY MOMENTUM
           </div>
           <div className="text-3xl font-extrabold text-white tracking-tight">
-            NBA + NCAA &middot; Tonight
+            NBA + NCAA &middot; {dateStr} {timeStr}
           </div>
+          {otd && (
+            <div className="text-xs text-[#8494a7] mt-1 italic">
+              On this day: {otd}
+            </div>
+          )}
         </div>
         <div className="text-right">
           <div className="flex items-center gap-2 justify-end mb-1">
