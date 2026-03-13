@@ -75,9 +75,18 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   const midY = toY(50).toFixed(1);
   const nowX = toX(n - 1).toFixed(1);
 
-  // Compute trends
-  const awayRange = getLast10MinIndices(chartAway);
-  const homeRange = getLast10MinIndices(chartHome);
+  // Compute trends — if last 5 min has < 3 points, use last 25% of all data
+  function getTrendRange(chart) {
+    const range = getLast10MinIndices(chart);
+    const count = range.endIdx - range.startIdx + 1;
+    if (count >= 3) return range;
+    // Fallback: use last 25% of data points
+    const fallbackStart = Math.max(0, chart.length - Math.ceil(chart.length * 0.25));
+    return { startIdx: fallbackStart, endIdx: chart.length - 1 };
+  }
+
+  const awayRange = getTrendRange(chartAway);
+  const homeRange = getTrendRange(chartHome);
   const awayTrend = trendLine(chartAway, awayRange.startIdx, awayRange.endIdx);
   const homeTrend = trendLine(chartHome, homeRange.startIdx, homeRange.endIdx);
 
