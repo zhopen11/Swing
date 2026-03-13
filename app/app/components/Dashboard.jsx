@@ -20,6 +20,7 @@ export default function Dashboard() {
   const timerRef = useRef(null);
   const clockRef = useRef(null);
   const finalTimestamps = useRef({});
+  const seenLive = useRef(new Set());
 
   const fetchData = useCallback(async () => {
     try {
@@ -59,13 +60,14 @@ export default function Dashboard() {
   const allGames = games;
   const now = Date.now();
 
-  // Track when games first go final
+  // Track when games first go final (only if we saw them live this session)
   allGames.forEach((g) => {
-    if (g.status === 'STATUS_FINAL' && !finalTimestamps.current[g.id]) {
-      finalTimestamps.current[g.id] = now;
-    }
     if (LIVE_STATUSES.has(g.status)) {
+      seenLive.current.add(g.id);
       delete finalTimestamps.current[g.id];
+    }
+    if (g.status === 'STATUS_FINAL' && !finalTimestamps.current[g.id] && seenLive.current.has(g.id)) {
+      finalTimestamps.current[g.id] = now;
     }
   });
 
@@ -147,9 +149,9 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="header-live-section text-right">
-          <div className="flex items-center gap-2 justify-end mb-1">
-            <span className="w-2 h-2 rounded-full bg-[#C0392B] animate-pulse" />
-            <span className="text-base font-bold text-[#C0392B]">
+          <div className="flex items-center justify-end mb-1" style={{ gap: '10px' }}>
+            <span className="rounded-full bg-[#C0392B] animate-pulse" style={{ width: '12px', height: '12px' }} />
+            <span className="font-bold text-[#C0392B]" style={{ fontSize: '20px' }}>
               <span className="font-mono">{liveCount}</span> LIVE
             </span>
           </div>
@@ -223,32 +225,35 @@ export default function Dashboard() {
                   ))}
                   {/* Legend card */}
                   <div className="bg-white rounded-xl border border-[#dce6f0] flex flex-col justify-center" style={{ padding: '12px' }}>
-                    <div className="text-base font-bold text-[#1493ff]" style={{ marginBottom: '10px' }}>
-                      The Swing &middot; How to Read
+                    <div className="flex flex-col items-center" style={{ marginBottom: '12px' }}>
+                      <Image src="/swing-logo.jpg" alt="" width={96} height={96} className="rounded-full" style={{ background: '#fff', marginBottom: '8px' }} />
+                      <div className="text-xl font-bold text-[#1493ff]">
+                        THE SWING &middot; How to Read
+                      </div>
                     </div>
                     <div className="flex flex-col" style={{ gap: '8px' }}>
                       <div className="flex items-center" style={{ gap: '10px' }}>
                         <span className="w-3 h-3 rounded-full bg-[#6b7c93] shrink-0" />
-                        <span className="text-sm text-[#001c55]">
-                          <strong>Momentum 0&ndash;100</strong> per team &mdash; process, not outcome
+                        <span className="text-sm">
+                          <strong style={{ color: '#6b7c93' }}>Momentum 0&ndash;100</strong> <span className="text-[#001c55]">&mdash; process, not outcome</span>
                         </span>
                       </div>
                       <div className="flex items-center" style={{ gap: '10px' }}>
                         <span className="w-3 h-3 rounded-full bg-[#C0392B] shrink-0" />
-                        <span className="text-sm text-[#001c55]">
-                          <strong>Bluffing</strong> &mdash; score &amp; momentum leaders disagree
+                        <span className="text-sm">
+                          <strong style={{ color: '#C0392B' }}>Bluffing</strong> <span className="text-[#001c55]">&mdash; score &amp; momentum leaders disagree</span>
                         </span>
                       </div>
                       <div className="flex items-center" style={{ gap: '10px' }}>
                         <span className="w-3 h-3 rounded-full bg-[#00C853] shrink-0" />
-                        <span className="text-sm text-[#001c55]">
-                          <strong>Comeback Watch</strong> &mdash; trailing team leads momentum
+                        <span className="text-sm">
+                          <strong style={{ color: '#00C853' }}>Comeback Watch</strong> <span className="text-[#001c55]">&mdash; trailing team leads momentum</span>
                         </span>
                       </div>
                       <div className="flex items-center" style={{ gap: '10px' }}>
                         <span className="w-3 h-3 rounded-full bg-[#FFD700] shrink-0" />
-                        <span className="text-sm text-[#001c55]">
-                          <strong>Swing Warning</strong> &mdash; close score, one-sided momentum
+                        <span className="text-sm">
+                          <strong style={{ color: '#FFD700' }}>Swing Warning</strong> <span className="text-[#001c55]">&mdash; close score, one-sided momentum</span>
                         </span>
                       </div>
                     </div>
