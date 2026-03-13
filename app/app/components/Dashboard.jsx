@@ -339,13 +339,53 @@ export default function Dashboard() {
       {/* Main content */}
       <main className="main-content">
         {filter === 'CLV' ? (
-          <div className="text-center" style={{ padding: '60px 20px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📊</div>
-            <div className="text-xl font-bold text-[#001c55]" style={{ marginBottom: '8px' }}>
-              Closing Line Value
-            </div>
-            <div className="text-base text-[#6b7c93]">
-              Coming soon — track CLV across live and completed games.
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '40px 20px',
+          }}>
+            <div style={{
+              background: '#fff',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(0, 28, 85, 0.12)',
+              maxWidth: '500px',
+              width: '100%',
+              textAlign: 'center',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                background: '#001c55',
+                padding: '40px 24px 32px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+              }}>
+                <Image
+                  src="/swing-logo.jpg"
+                  alt="The Swing"
+                  width={120}
+                  height={120}
+                  style={{ borderRadius: '50%', marginBottom: '20px' }}
+                />
+                <div style={{
+                  fontSize: '32px',
+                  fontWeight: 800,
+                  color: '#fff',
+                  letterSpacing: '-0.5px',
+                }}>
+                  Closing Line Value
+                </div>
+              </div>
+              <div style={{ padding: '32px 28px 40px' }}>
+                <div style={{
+                  fontSize: '18px',
+                  color: '#6b7c93',
+                  lineHeight: '1.6',
+                }}>
+                  Just Google <span style={{ color: '#001c55', fontWeight: 700, fontStyle: 'italic' }}>&ldquo;THE SWING&rdquo;</span> &mdash; this will show you how good I am...
+                </div>
+              </div>
             </div>
           </div>
         ) : loading ? (
