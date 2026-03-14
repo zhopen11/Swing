@@ -128,13 +128,6 @@ export default function AuthModal({ mode: initialMode, onClose, onAuth }) {
     borderRadius: 0,
   };
 
-  const closeAbsoluteStyle = {
-    ...closeBtnStyle,
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-  };
-
   const bodyStyle = {
     padding: '24px',
   };
@@ -172,6 +165,13 @@ export default function AuthModal({ mode: initialMode, onClose, onAuth }) {
     cursor: 'pointer',
     lineHeight: 1,
     padding: '4px',
+  };
+
+  const closeAbsoluteStyle = {
+    ...closeBtnStyle,
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
   };
 
   const fieldGap = { marginBottom: '16px' };
