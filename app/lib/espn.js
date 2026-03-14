@@ -26,22 +26,92 @@ async function fetchJSON(url, retries = 1) {
 }
 
 async function fetchNbaScoreboard(dateStr) {
-  const url = dateStr ? `${NBA_SCOREBOARD}?dates=${dateStr}` : NBA_SCOREBOARD;
-  const data = await fetchJSON(url);
+  if (dateStr) {
+    const url = `${NBA_SCOREBOARD}?dates=${dateStr}`;
+    const data = await fetchJSON(url);
+    return data?.events || [];
+  }
+
+  // Before 6am ET, fetch yesterday too for late games
+  const now = new Date();
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const hour = eastern.getHours();
+
+  if (hour < 6) {
+    const yesterday = new Date(eastern);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr =
+      yesterday.getFullYear().toString() +
+      String(yesterday.getMonth() + 1).padStart(2, '0') +
+      String(yesterday.getDate()).padStart(2, '0');
+
+    const [todayData, yesterdayData] = await Promise.all([
+      fetchJSON(NBA_SCOREBOARD),
+      fetchJSON(`${NBA_SCOREBOARD}?dates=${yesterdayStr}`),
+    ]);
+
+    const todayEvents = todayData?.events || [];
+    const yesterdayEvents = yesterdayData?.events || [];
+    const seen = new Set();
+    const merged = [];
+    for (const e of [...yesterdayEvents, ...todayEvents]) {
+      if (!seen.has(e.id)) {
+        seen.add(e.id);
+        merged.push(e);
+      }
+    }
+    return merged;
+  }
+
+  const data = await fetchJSON(NBA_SCOREBOARD);
   return data?.events || [];
 }
 
 async function fetchCbbScoreboard(dateStr) {
-  if (!dateStr) {
-    // Use US Eastern time to avoid UTC date rollover issues
-    const now = new Date();
-    const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-    dateStr =
-      eastern.getFullYear().toString() +
-      String(eastern.getMonth() + 1).padStart(2, '0') +
-      String(eastern.getDate()).padStart(2, '0');
+  if (dateStr) {
+    const url = `${CBB_SCOREBOARD}?dates=${dateStr}&groups=50&limit=200`;
+    const data = await fetchJSON(url);
+    return data?.events || [];
   }
-  const url = `${CBB_SCOREBOARD}?dates=${dateStr}&groups=50&limit=200`;
+
+  // Use Eastern time, but before 6am fetch yesterday too (late games)
+  const now = new Date();
+  const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  const todayStr =
+    eastern.getFullYear().toString() +
+    String(eastern.getMonth() + 1).padStart(2, '0') +
+    String(eastern.getDate()).padStart(2, '0');
+
+  const hour = eastern.getHours();
+  if (hour < 6) {
+    // Before 6am ET — fetch both yesterday and today
+    const yesterday = new Date(eastern);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr =
+      yesterday.getFullYear().toString() +
+      String(yesterday.getMonth() + 1).padStart(2, '0') +
+      String(yesterday.getDate()).padStart(2, '0');
+
+    const [todayData, yesterdayData] = await Promise.all([
+      fetchJSON(`${CBB_SCOREBOARD}?dates=${todayStr}&groups=50&limit=200`),
+      fetchJSON(`${CBB_SCOREBOARD}?dates=${yesterdayStr}&groups=50&limit=200`),
+    ]);
+
+    const todayEvents = todayData?.events || [];
+    const yesterdayEvents = yesterdayData?.events || [];
+    // Merge, deduplicate by event id
+    const seen = new Set();
+    const merged = [];
+    for (const e of [...yesterdayEvents, ...todayEvents]) {
+      if (!seen.has(e.id)) {
+        seen.add(e.id);
+        merged.push(e);
+      }
+    }
+    return merged;
+  }
+
+  const url = `${CBB_SCOREBOARD}?dates=${todayStr}&groups=50&limit=200`;
   const data = await fetchJSON(url);
   return data?.events || [];
 }
