@@ -73,7 +73,7 @@ export default function Footer() {
             style={{ borderRadius: '50%' }}
           />
           <span style={{ color: '#fff', fontWeight: 700 }}>THE SWING</span>
-          <span>&copy; {new Date().getFullYear()}</span>
+          <span>&copy; 2026</span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap' }}>

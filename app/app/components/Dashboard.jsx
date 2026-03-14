@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [tick, setTick] = useState(0);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState(null);
   const [otd, setOtd] = useState(null);
   const [user, setUser] = useState(null);
   const [subscribedGames, setSubscribedGames] = useState([]);
@@ -74,6 +74,7 @@ export default function Dashboard() {
   }, []);
 
   useEffect(() => {
+    setCurrentTime(new Date());
     fetchData();
     timerRef.current = setInterval(fetchData, REFRESH_MS);
     clockRef.current = setInterval(() => setCurrentTime(new Date()), 30000);
@@ -180,14 +181,18 @@ export default function Dashboard() {
   const pre = filtered.filter((g) => g.status === 'STATUS_SCHEDULED');
   const final_ = filtered.filter(isTrulyFinal);
 
-  const timeStr = currentTime.toLocaleTimeString('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  const timeStr = currentTime
+    ? currentTime.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      })
+    : '';
   const dateStr = currentTime
-    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
-    .toUpperCase();
+    ? currentTime
+        .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+        .toUpperCase()
+    : '';
 
   const lastUpdatedStr = lastUpdated
     ? lastUpdated.toLocaleTimeString('en-US', {
