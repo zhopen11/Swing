@@ -49,14 +49,27 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
     return H - 4 - ((v - yMin) / yRange) * (H - 8);
   }
 
-  // Get indices for last 10 minutes of data
-  function getLast10MinIndices(chart) {
+  // Convert period + clock to total game seconds elapsed
+  function gameSecondsElapsed(point) {
+    const p = point.p || 1;
+    const c = point.c || '0:00';
+    const [m, s] = c.split(':').map(Number);
+    const clockSecs = (m || 0) * 60 + (s || 0);
+    // NBA: 12-min quarters, CBB: 20-min halves
+    const periodMins = league === 'NBA' ? 12 : 20;
+    const periodSecs = periodMins * 60;
+    // Clock counts down, so elapsed in current period = periodSecs - clockSecs
+    return (p - 1) * periodSecs + (periodSecs - clockSecs);
+  }
+
+  // Get indices for last 5 game-time minutes of data
+  function getLast5MinIndices(chart) {
     if (!chart || chart.length < 2) return { startIdx: 0, endIdx: chart.length - 1 };
-    const lastTime = new Date(chart[chart.length - 1].t).getTime();
-    const cutoff = lastTime - 12 * 60 * 1000;
+    const lastElapsed = gameSecondsElapsed(chart[chart.length - 1]);
+    const cutoff = lastElapsed - 3 * 60; // 3 game-time minutes
     let startIdx = chart.length - 1;
     for (let i = chart.length - 1; i >= 0; i--) {
-      if (new Date(chart[i].t).getTime() >= cutoff) {
+      if (gameSecondsElapsed(chart[i]) >= cutoff) {
         startIdx = i;
       } else {
         break;
@@ -108,7 +121,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
 
   // Compute trends — if last 5 min has < 3 points, use last 25% of all data
   function getTrendRange(chart) {
-    const range = getLast10MinIndices(chart);
+    const range = getLast5MinIndices(chart);
     const count = range.endIdx - range.startIdx + 1;
     if (count >= 3) return range;
     // Fallback: use last 25% of data points
@@ -122,7 +135,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   const homeTrend = trendLine(chartHome, homeRange.startIdx, homeRange.endIdx);
 
   // Project to right edge of chart
-  const projSteps = Math.max(1, Math.round(n * 0.33));
+  const projSteps = Math.max(1, Math.round(n * 0.10));
   const projEndX = W - 2;
   const awayProjVal = projectValue(awayTrend, projSteps);
   const homeProjVal = projectValue(homeTrend, projSteps);
