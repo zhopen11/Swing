@@ -31,6 +31,9 @@ export async function GET() {
         lastName: user.lastName,
         email: user.email,
         phone: user.phone,
+        alertBluffing: user.alertBluffing,
+        alertComeback: user.alertComeback,
+        alertSwingWarning: user.alertSwingWarning,
       },
     });
   } catch (err) {

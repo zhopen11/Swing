@@ -28,7 +28,7 @@ export async function POST(request) {
     const cookieStore = await cookies();
     setAuthCookie(cookieStore, token);
 
-    return NextResponse.json({ success: true, user: { id: user.id, firstName: user.firstName } });
+    return NextResponse.json({ success: true, user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, phone: user.phone } });
   } catch (err) {
     console.error('Signin error:', err);
     return NextResponse.json({ error: 'Sign in failed' }, { status: 500 });
