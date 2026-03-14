@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { findUserByPhone } from '../../../../lib/users';
 import { createToken, setAuthCookie } from '../../../../lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const { phone } = await request.json();

@@ -59,6 +59,8 @@ async function fetchAllGames() {
   return Promise.all(detailPromises);
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const subscriptions = readSubscriptions();

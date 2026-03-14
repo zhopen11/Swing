@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { verifyToken, getAuthCookie } from '../../../../lib/auth';
 import { findUserById } from '../../../../lib/users';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const cookieStore = await cookies();

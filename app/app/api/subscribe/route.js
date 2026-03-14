@@ -3,6 +3,8 @@ import { cookies } from 'next/headers';
 import { verifyToken, getAuthCookie } from '../../../lib/auth';
 import { findSubscription, addSubscription, removeSubscription } from '../../../lib/subscriptions';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const cookieStore = await cookies();

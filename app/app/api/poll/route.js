@@ -13,6 +13,8 @@ const { detectAlerts } = require('../../../lib/alerts');
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const [nbaEvents, cbbEvents] = await Promise.all([

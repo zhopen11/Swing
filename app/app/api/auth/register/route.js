@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { readUsers, writeUsers, findUserByPhone } from '../../../../lib/users';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const { phone } = await request.json();
