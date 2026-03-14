@@ -33,11 +33,13 @@ async function fetchNbaScoreboard(dateStr) {
 
 async function fetchCbbScoreboard(dateStr) {
   if (!dateStr) {
+    // Use US Eastern time to avoid UTC date rollover issues
     const now = new Date();
+    const eastern = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
     dateStr =
-      now.getFullYear().toString() +
-      String(now.getMonth() + 1).padStart(2, '0') +
-      String(now.getDate()).padStart(2, '0');
+      eastern.getFullYear().toString() +
+      String(eastern.getMonth() + 1).padStart(2, '0') +
+      String(eastern.getDate()).padStart(2, '0');
   }
   const url = `${CBB_SCOREBOARD}?dates=${dateStr}&groups=50&limit=200`;
   const data = await fetchJSON(url);
