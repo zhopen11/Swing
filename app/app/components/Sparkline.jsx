@@ -1,6 +1,11 @@
 'use client';
 
+import { useState, useRef, useCallback } from 'react';
+
 export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, awayAbbr, homeAbbr, isLive }) {
+  const [tooltip, setTooltip] = useState(null);
+  const svgRef = useRef(null);
+  const tooltipTimer = useRef(null);
   if (!chartAway || !chartHome || chartAway.length < 2) return null;
 
   const W = 300;
@@ -108,12 +113,89 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   const awayProjVal = projectValue(awayTrend, projSteps);
   const homeProjVal = projectValue(homeTrend, projSteps);
 
+  const handleChartClick = useCallback((e) => {
+    if (!svgRef.current) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const clickXRatio = (e.clientX - rect.left) / rect.width;
+    const svgX = clickXRatio * W;
+    const clickYRatio = (e.clientY - rect.top) / rect.height;
+    const svgY = clickYRatio * H;
+    const leftPct = clickXRatio * 100;
+
+    // Check if click is in the forecast zone
+    if (isLive && svgX > forecastX && awayTrend && homeTrend) {
+      // Interpolate projected values at click position
+      const forecastRatio = (svgX - forecastX) / (W - forecastX);
+      const steps = forecastRatio * projSteps;
+
+      const awayProjAtClick = Math.max(yMin, Math.min(yMax,
+        awayTrend.slope * (awayTrend.endIdx + steps) + awayTrend.intercept
+      ));
+      const homeProjAtClick = Math.max(yMin, Math.min(yMax,
+        homeTrend.slope * (homeTrend.endIdx + steps) + homeTrend.intercept
+      ));
+
+      const awayRound = Math.round(awayProjAtClick);
+      const homeRound = Math.round(homeProjAtClick);
+
+      if (Math.abs(awayRound - homeRound) <= 2) {
+        setTooltip({ dual: true, away: { team: awayAbbr, val: awayRound, color: awayColor }, home: { team: homeAbbr, val: homeRound, color: homeColor }, time: 'Projected', leftPct });
+      } else {
+        const awayY = toY(awayProjAtClick);
+        const homeY = toY(homeProjAtClick);
+        const pickAway = Math.abs(awayY - svgY) <= Math.abs(homeY - svgY);
+        const team = pickAway ? awayAbbr : homeAbbr;
+        const color = pickAway ? awayColor : homeColor;
+        const val = pickAway ? awayRound : homeRound;
+        setTooltip({ team, val, time: 'Projected', color, leftPct });
+      }
+      clearTimeout(tooltipTimer.current);
+      tooltipTimer.current = setTimeout(() => setTooltip(null), 3000);
+      return;
+    }
+
+    // Find closest data index
+    let closestIdx = 0;
+    let closestDist = Infinity;
+    for (let i = 0; i < n; i++) {
+      const dist = Math.abs(toX(i) - svgX);
+      if (dist < closestDist) {
+        closestDist = dist;
+        closestIdx = i;
+      }
+    }
+
+    const awayVal = chartAway[closestIdx].v;
+    const homeVal = chartHome[closestIdx].v;
+
+    const time = new Date(chartAway[closestIdx].t).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
+    });
+
+    if (Math.abs(awayVal - homeVal) <= 2) {
+      setTooltip({ dual: true, away: { team: awayAbbr, val: awayVal, color: awayColor }, home: { team: homeAbbr, val: homeVal, color: homeColor }, time, leftPct });
+    } else {
+      const awayY = toY(awayVal);
+      const homeY = toY(homeVal);
+      const isAway = Math.abs(awayY - svgY) <= Math.abs(homeY - svgY);
+      const team = isAway ? awayAbbr : homeAbbr;
+      const color = isAway ? awayColor : homeColor;
+      const val = isAway ? awayVal : homeVal;
+      setTooltip({ team, val, time, color, leftPct });
+    }
+    clearTimeout(tooltipTimer.current);
+    tooltipTimer.current = setTimeout(() => setTooltip(null), 3000);
+  }, [n, chartAway, chartHome, awayAbbr, homeAbbr, awayColor, homeColor, isLive, forecastX, awayTrend, homeTrend, projSteps, yMin, yMax]);
+
   return (
-    <div className="pb-3 pt-3 border-t border-[#f0f0f0]">
+    <div className="pb-3 pt-3 border-t border-[#f0f0f0]" style={{ position: 'relative' }}>
       <div className="text-sm text-[#6b7c93] text-center" style={{ marginBottom: '4px' }}>
         <span className="font-medium">Momentum Chart</span>
       </div>
-      <svg className="w-full block" style={{ height: '80px' }} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      <svg ref={svgRef} onClick={handleChartClick} className="w-full block" style={{ height: '80px', cursor: 'crosshair' }} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
         {/* Forecast zone background (live only) */}
         {isLive && (
           <rect
@@ -262,6 +344,87 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
           {homeAbbr}
         </text>
       </svg>
+      {tooltip && !tooltip.dual && (
+        <div style={{
+          position: 'absolute',
+          left: `${tooltip.leftPct}%`,
+          bottom: '90px',
+          transform: 'translateX(-50%)',
+          background: tooltip.color,
+          color: '#fff',
+          padding: '6px 12px',
+          borderRadius: '8px',
+          fontSize: '15px',
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          zIndex: 50,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          fontFamily: "'DM Sans', sans-serif",
+          pointerEvents: 'none',
+        }}>
+          <div style={{ fontWeight: 700 }}>{tooltip.team}: {tooltip.val}</div>
+          <div style={{ opacity: 0.8, fontSize: '13px' }}>{tooltip.time}</div>
+          <div style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: `6px solid ${tooltip.color}`,
+          }} />
+        </div>
+      )}
+      {tooltip && tooltip.dual && (
+        <div style={{
+          position: 'absolute',
+          left: `${tooltip.leftPct}%`,
+          bottom: '90px',
+          transform: 'translateX(-50%)',
+          background: '#fff',
+          color: '#222',
+          padding: '8px 14px',
+          borderRadius: '8px',
+          border: '2px solid #222',
+          fontSize: '15px',
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          zIndex: 50,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          fontFamily: "'DM Sans', sans-serif",
+          pointerEvents: 'none',
+        }}>
+          <div style={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0' }}>
+            <span style={{ color: '#fff', backgroundColor: tooltip.away.color, padding: '2px 8px', borderRadius: '4px 0 0 4px' }}>{tooltip.away.team}: {tooltip.away.val}</span>
+            <span style={{ color: '#fff', backgroundColor: tooltip.home.color, padding: '2px 8px', borderRadius: '0 4px 4px 0' }}>{tooltip.home.team}: {tooltip.home.val}</span>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: '13px', color: '#6b7c93', marginTop: '4px' }}>{tooltip.time}</div>
+          <div style={{
+            position: 'absolute',
+            bottom: '-7px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '7px solid transparent',
+            borderRight: '7px solid transparent',
+            borderTop: '7px solid #222',
+          }} />
+          <div style={{
+            position: 'absolute',
+            bottom: '-5px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+            borderTop: '6px solid #fff',
+          }} />
+        </div>
+      )}
     </div>
   );
 }
