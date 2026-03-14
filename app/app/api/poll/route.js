@@ -17,6 +17,7 @@ const CACHE_TTL = 10_000; // 10 seconds
 let cachedResponse = null;
 let cacheTimestamp = 0;
 let fetchInFlight = null;
+const finalMomCache = new Map(); // gameId -> momentum data (never changes once final)
 
 export const dynamic = 'force-dynamic';
 
@@ -54,16 +55,25 @@ async function buildPollData() {
       (g.status === 'STATUS_FINAL' && g.period >= 2);
 
     if (needDetail) {
-      const summary = await fetchGameSummary(g.id, g.league);
-      const plays = getPlaysFromSummary(summary);
-      if (plays.length > 0) {
-        g.mom = computeMomentumFromPlays(
-          plays,
-          g.awayAbbr,
-          g.homeAbbr,
-          g.awayId,
-          g.homeId
-        );
+      // Use cached momentum for final games
+      if (g.status === 'STATUS_FINAL' && finalMomCache.has(g.id)) {
+        g.mom = finalMomCache.get(g.id);
+      } else {
+        const summary = await fetchGameSummary(g.id, g.league);
+        const plays = getPlaysFromSummary(summary);
+        if (plays.length > 0) {
+          g.mom = computeMomentumFromPlays(
+            plays,
+            g.awayAbbr,
+            g.homeAbbr,
+            g.awayId,
+            g.homeId
+          );
+          // Cache momentum permanently once game is final
+          if (g.status === 'STATUS_FINAL') {
+            finalMomCache.set(g.id, g.mom);
+          }
+        }
       }
     }
 
