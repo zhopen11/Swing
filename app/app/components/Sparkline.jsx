@@ -8,7 +8,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   const n = Math.min(chartAway.length, chartHome.length);
 
   // For live games, data occupies 75% of width; rest is forecast zone
-  const dataW = isLive ? W * 0.85 : W;
+  const dataW = isLive ? W * 0.87 : W;
   const forecastX = dataW; // "NOW" line position
 
   // Compute auto-scaled Y range from actual data

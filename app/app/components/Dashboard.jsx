@@ -28,6 +28,7 @@ export default function Dashboard() {
   const clockRef = useRef(null);
   const finalTimestamps = useRef({});
   const seenLive = useRef(new Set());
+  const leagueOrderRef = useRef({ order: null, lastUpdated: 0 });
 
   const fetchSubscriptions = useCallback(async () => {
     try {
@@ -169,7 +170,13 @@ export default function Dashboard() {
     return periodsLeft * periodMins * 60 + clockSecs;
   }
 
-  const live = filtered.filter(isLiveOrLingering).sort((a, b) => timeRemaining(a) - timeRemaining(b));
+  // Group live games by league, sort within each group, reorder groups every 15 min
+  const liveUnsorted = filtered.filter(isLiveOrLingering);
+  const nbaLive = liveUnsorted.filter((g) => g.league === 'NBA').sort((a, b) => timeRemaining(a) - timeRemaining(b));
+  const cbbLive = liveUnsorted.filter((g) => g.league === 'CBB').sort((a, b) => timeRemaining(a) - timeRemaining(b));
+
+  const live = [...cbbLive, ...nbaLive];
+
   const pre = filtered.filter((g) => g.status === 'STATUS_SCHEDULED');
   const final_ = filtered.filter(isTrulyFinal);
 
