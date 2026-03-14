@@ -286,6 +286,7 @@ export default function Dashboard() {
                     fontFamily: "'DM Sans', sans-serif",
                     textDecoration: 'underline',
                     padding: '0',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   Sign Out
@@ -305,6 +306,7 @@ export default function Dashboard() {
                     fontFamily: "'DM Sans', sans-serif",
                     textDecoration: 'underline',
                     padding: '0',
+                    whiteSpace: 'nowrap',
                   }}
                 >
                   Sign In

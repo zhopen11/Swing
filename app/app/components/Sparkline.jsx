@@ -164,7 +164,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
         setTooltip({ team, val, time: 'Projected', color, leftPct });
       }
       clearTimeout(tooltipTimer.current);
-      tooltipTimer.current = setTimeout(() => setTooltip(null), 3000);
+      tooltipTimer.current = setTimeout(() => setTooltip(null), 5000);
       return;
     }
 
@@ -181,11 +181,14 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
 
     const awayVal = chartAway[closestIdx].v;
     const homeVal = chartHome[closestIdx].v;
+    const awayScore = chartAway[closestIdx].as;
+    const homeScore = chartAway[closestIdx].hs;
+    const score = awayScore != null && homeScore != null ? { awayAbbr, awayScore, homeAbbr, homeScore } : null;
 
     const time = formatGameTime(chartAway[closestIdx], league);
 
     if (Math.abs(awayVal - homeVal) <= 2) {
-      setTooltip({ dual: true, away: { team: awayAbbr, val: awayVal, color: awayColor }, home: { team: homeAbbr, val: homeVal, color: homeColor }, time, leftPct });
+      setTooltip({ dual: true, away: { team: awayAbbr, val: awayVal, color: awayColor }, home: { team: homeAbbr, val: homeVal, color: homeColor }, time, score, leftPct });
     } else {
       const awayY = toY(awayVal);
       const homeY = toY(homeVal);
@@ -193,10 +196,10 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
       const team = isAway ? awayAbbr : homeAbbr;
       const color = isAway ? awayColor : homeColor;
       const val = isAway ? awayVal : homeVal;
-      setTooltip({ team, val, time, color, leftPct });
+      setTooltip({ team, val, time, score, color, leftPct });
     }
     clearTimeout(tooltipTimer.current);
-    tooltipTimer.current = setTimeout(() => setTooltip(null), 3000);
+    tooltipTimer.current = setTimeout(() => setTooltip(null), 5000);
   };
 
   return (
@@ -359,20 +362,35 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
           left: `${tooltip.leftPct}%`,
           bottom: '90px',
           transform: 'translateX(-50%)',
-          background: tooltip.color,
-          color: '#fff',
-          padding: '6px 12px',
+          background: '#fff',
+          color: '#222',
+          padding: '8px 14px',
           borderRadius: '8px',
+          border: '2px solid #222',
           fontSize: '15px',
           fontWeight: 600,
           whiteSpace: 'nowrap',
           zIndex: 50,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           fontFamily: "'DM Sans', sans-serif",
           pointerEvents: 'none',
         }}>
-          <div style={{ fontWeight: 700 }}>{tooltip.team}: {tooltip.val}</div>
-          <div style={{ opacity: 0.8, fontSize: '13px' }}>{tooltip.time}</div>
+          <div style={{ fontWeight: 700 }}>
+            <span style={{ color: '#fff', backgroundColor: tooltip.color, padding: '2px 8px', borderRadius: '4px' }}>{tooltip.team}: {tooltip.val}</span>
+          </div>
+          <div style={{ textAlign: 'center', fontSize: '13px', color: '#6b7c93', marginTop: '4px' }}>{tooltip.time}</div>
+          {tooltip.score && <div style={{ textAlign: 'center', fontSize: '12px' }}><span style={{ color: awayColor, fontWeight: 700 }}>{tooltip.score.awayAbbr}</span> {tooltip.score.awayScore} - <span style={{ color: homeColor, fontWeight: 700 }}>{tooltip.score.homeAbbr}</span> {tooltip.score.homeScore}</div>}
+          <div style={{
+            position: 'absolute',
+            bottom: '-7px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '7px solid transparent',
+            borderRight: '7px solid transparent',
+            borderTop: '7px solid #222',
+          }} />
           <div style={{
             position: 'absolute',
             bottom: '-5px',
@@ -382,7 +400,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
             height: 0,
             borderLeft: '6px solid transparent',
             borderRight: '6px solid transparent',
-            borderTop: `6px solid ${tooltip.color}`,
+            borderTop: '6px solid #fff',
           }} />
         </div>
       )}
@@ -410,6 +428,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
             <span style={{ color: '#fff', backgroundColor: tooltip.home.color, padding: '2px 8px', borderRadius: '0 4px 4px 0' }}>{tooltip.home.team}: {tooltip.home.val}</span>
           </div>
           <div style={{ textAlign: 'center', fontSize: '13px', color: '#6b7c93', marginTop: '4px' }}>{tooltip.time}</div>
+          {tooltip.score && <div style={{ textAlign: 'center', fontSize: '12px' }}><span style={{ color: awayColor, fontWeight: 700 }}>{tooltip.score.awayAbbr}</span> {tooltip.score.awayScore} - <span style={{ color: homeColor, fontWeight: 700 }}>{tooltip.score.homeAbbr}</span> {tooltip.score.homeScore}</div>}
           <div style={{
             position: 'absolute',
             bottom: '-7px',
