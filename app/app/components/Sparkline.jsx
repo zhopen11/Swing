@@ -4,25 +4,37 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   if (!chartAway || !chartHome || chartAway.length < 2) return null;
 
   const W = 300;
-  const H = 60;
+  const H = 80;
   const n = Math.min(chartAway.length, chartHome.length);
 
   // For live games, data occupies 75% of width; rest is forecast zone
   const dataW = isLive ? W * 0.85 : W;
   const forecastX = dataW; // "NOW" line position
 
+  // Compute auto-scaled Y range from actual data
+  const allVals = [
+    ...chartAway.slice(0, n).map((p) => p.v),
+    ...chartHome.slice(0, n).map((p) => p.v),
+  ];
+  const dataMin = Math.min(...allVals);
+  const dataMax = Math.max(...allVals);
+  const padding = Math.max(5, (dataMax - dataMin) * 0.15);
+  const yMin = Math.max(0, Math.floor(dataMin - padding));
+  const yMax = Math.min(100, Math.ceil(dataMax + padding));
+  const yRange = yMax - yMin || 1;
+
   function toX(i) {
     return (i / (n - 1)) * (dataW - 4) + 2;
   }
   function toY(v) {
-    return H - 4 - ((v - 5) / 90) * (H - 8);
+    return H - 4 - ((v - yMin) / yRange) * (H - 8);
   }
 
   // Get indices for last 10 minutes of data
   function getLast10MinIndices(chart) {
     if (!chart || chart.length < 2) return { startIdx: 0, endIdx: chart.length - 1 };
     const lastTime = new Date(chart[chart.length - 1].t).getTime();
-    const cutoff = lastTime - 5 * 60 * 1000;
+    const cutoff = lastTime - 12 * 60 * 1000;
     let startIdx = chart.length - 1;
     for (let i = chart.length - 1; i >= 0; i--) {
       if (new Date(chart[i].t).getTime() >= cutoff) {
@@ -61,7 +73,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
   function projectValue(trend, steps) {
     if (!trend) return null;
     const val = trend.slope * (trend.endIdx + steps) + trend.intercept;
-    return Math.max(5, Math.min(95, val));
+    return Math.max(yMin, Math.min(yMax, val));
   }
 
   const pathA = Array.from({ length: n }, (_, i) =>
@@ -98,12 +110,10 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
 
   return (
     <div className="pb-3 pt-3 border-t border-[#f0f0f0]">
-      <div className="text-sm text-[#6b7c93] flex justify-between mb-1.5">
-        <span className="font-semibold" style={{ color: awayColor }}>{awayAbbr}</span>
+      <div className="text-sm text-[#6b7c93] text-center" style={{ marginBottom: '4px' }}>
         <span className="font-medium">Momentum Chart</span>
-        <span className="font-semibold" style={{ color: homeColor }}>{homeAbbr}</span>
       </div>
-      <svg className="w-full h-[60px] block" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      <svg className="w-full block" style={{ height: '80px' }} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
         {/* Forecast zone background (live only) */}
         {isLive && (
           <rect
@@ -115,6 +125,10 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
             opacity="0.6"
           />
         )}
+
+        {/* Zone shading: green above midline, red below */}
+        <rect x="0" y="0" width={W} height={midY} fill="#00C853" opacity="0.08" />
+        <rect x="0" y={midY} width={W} height={H - parseFloat(midY)} fill="#C0392B" opacity="0.08" />
 
         {/* Center line */}
         <line x1="0" y1={midY} x2={W} y2={midY} stroke="#e0e0e0" strokeWidth="1" strokeDasharray="3,3" />
@@ -172,8 +186,8 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
           />
         )}
 
-        {/* Historical trend lines (non-live only) */}
-        {!isLive && awayTrend && (
+        {/* No trend lines for final games */}
+        {false && !isLive && awayTrend && (
           <line
             x1={toX(awayTrend.startIdx).toFixed(1)}
             y1={toY(awayTrend.slope * awayTrend.startIdx + awayTrend.intercept).toFixed(1)}
@@ -185,7 +199,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
             opacity="0.35"
           />
         )}
-        {!isLive && homeTrend && (
+        {false && !isLive && homeTrend && (
           <line
             x1={toX(homeTrend.startIdx).toFixed(1)}
             y1={toY(homeTrend.slope * homeTrend.startIdx + homeTrend.intercept).toFixed(1)}
@@ -213,6 +227,40 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
         {isLive && homeProjVal !== null && (
           <circle cx={projEndX.toFixed(1)} cy={toY(homeProjVal).toFixed(1)} r="2.5" fill={homeColor} opacity="0.4" />
         )}
+
+        {/* Team labels at bottom center */}
+        <text
+          x={W / 2 - 6}
+          y={H - 2}
+          textAnchor="end"
+          fill={awayColor}
+          fontSize="7"
+          fontWeight="700"
+          fontFamily="'DM Sans', sans-serif"
+        >
+          {awayAbbr}
+        </text>
+        <text
+          x={W / 2}
+          y={H - 2}
+          textAnchor="middle"
+          fill="#c0c7d0"
+          fontSize="7"
+          fontFamily="'DM Sans', sans-serif"
+        >
+          |
+        </text>
+        <text
+          x={W / 2 + 6}
+          y={H - 2}
+          textAnchor="start"
+          fill={homeColor}
+          fontSize="7"
+          fontWeight="700"
+          fontFamily="'DM Sans', sans-serif"
+        >
+          {homeAbbr}
+        </text>
       </svg>
     </div>
   );

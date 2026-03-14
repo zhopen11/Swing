@@ -71,6 +71,9 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
         <span className="text-sm font-semibold text-[#6b7c93]">
           {g.league} &middot; {g.shortName || g.name}
         </span>
+        {g.network && (
+          <span className="text-xs font-semibold text-[#8494a7]">{g.network}</span>
+        )}
         <div className="flex items-center" style={{ gap: '8px' }}>
           {isLive && (
             <span className="text-sm font-bold text-[#C0392B] flex items-center gap-1.5">
@@ -106,8 +109,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
         </div>
       </div>
 
-      {/* Score row */}
-      <div className="pb-3">
+      {/* Score row — fixed height for vertical alignment */}
+      <div style={{ paddingBottom: '12px', minHeight: '80px' }}>
         <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
           {/* Away team */}
           <div>
@@ -139,12 +142,10 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                     {g.homeScore}
                   </span>
                 </div>
-                <div className="text-sm text-[#6b7c93] mt-1">{g.network}</div>
               </>
             ) : (
               <>
                 <div className="font-mono text-lg text-[#8494a7]">{formatTime(g.date)}</div>
-                <div className="text-sm text-[#6b7c93] mt-1">{g.network}</div>
               </>
             )}
           </div>
@@ -167,11 +168,21 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
         <>
           <div className="pb-3 pt-1">
             <div className="flex items-center gap-3 mb-1.5">
-              <div className="flex-1 h-2.5 bg-[#ebebeb] rounded-full overflow-hidden relative">
+              <div className="flex-1 bg-[#ebebeb] rounded-full overflow-hidden relative" style={{ height: '26px' }}>
                 <div
-                  className="h-full rounded-full transition-[width] duration-[1.2s] ease-out opacity-90"
-                  style={{ width: `${g.mom.away}%`, backgroundColor: g.awayColor }}
-                />
+                  className="rounded-full transition-[width] duration-[1.2s] ease-out flex items-center"
+                  style={{
+                    width: `${Math.max(g.mom.away, 15)}%`,
+                    backgroundColor: g.awayColor,
+                    height: '100%',
+                    justifyContent: 'flex-end',
+                    paddingRight: '6px',
+                  }}
+                >
+                  <span className="font-mono font-bold text-white" style={{ fontSize: '16px', lineHeight: 1 }}>
+                    {g.mom.away}
+                  </span>
+                </div>
               </div>
               <div className="min-w-[90px] text-center font-mono text-sm font-bold tracking-wide whitespace-nowrap">
                 {(() => {
@@ -186,20 +197,23 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                   return <span className={s.text !== 'EVEN' ? 'animate-heartbeat' : ''} style={{ color: s.color, fontWeight: 800 }}>{s.text}</span>;
                 })()}
               </div>
-              <div className="flex-1 h-2.5 bg-[#ebebeb] rounded-full overflow-hidden relative">
+              <div className="flex-1 bg-[#ebebeb] rounded-full overflow-hidden relative" style={{ height: '26px' }}>
                 <div
-                  className="h-full rounded-full transition-[width] duration-[1.2s] ease-out opacity-90 float-right"
-                  style={{ width: `${g.mom.home}%`, backgroundColor: g.homeColor }}
-                />
+                  className="rounded-full transition-[width] duration-[1.2s] ease-out flex items-center"
+                  style={{
+                    width: `${Math.max(g.mom.home, 15)}%`,
+                    backgroundColor: g.homeColor,
+                    height: '100%',
+                    float: 'right',
+                    justifyContent: 'flex-start',
+                    paddingLeft: '6px',
+                  }}
+                >
+                  <span className="font-mono font-bold text-white" style={{ fontSize: '16px', lineHeight: 1 }}>
+                    {g.mom.home}
+                  </span>
+                </div>
               </div>
-            </div>
-            <div className="flex justify-between px-0.5">
-              <span className="font-mono text-sm font-semibold text-[#8494a7]">
-                {g.mom.away}
-              </span>
-              <span className="font-mono text-sm font-semibold text-[#8494a7]">
-                {g.mom.home}
-              </span>
             </div>
           </div>
 
