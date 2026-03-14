@@ -34,8 +34,52 @@ function swingLabel(away, home, awayAbbr, homeAbbr, awayColor, homeColor) {
   return { text: `${leader} SWING`, color };
 }
 
+function hexToRgb(hex) {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function rgbToHex(r, g, b) {
+  return '#' + [r, g, b].map((v) => Math.min(255, Math.max(0, Math.round(v))).toString(16).padStart(2, '0')).join('');
+}
+
+function colorDistance(c1, c2) {
+  const [r1, g1, b1] = hexToRgb(c1);
+  const [r2, g2, b2] = hexToRgb(c2);
+  return Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2);
+}
+
+function lightenColor(hex, pct) {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(
+    r + (255 - r) * pct,
+    g + (255 - g) * pct,
+    b + (255 - b) * pct,
+  );
+}
+
+function luminance(hex) {
+  const [r, g, b] = hexToRgb(hex);
+  return 0.299 * r + 0.587 * g + 0.114 * b;
+}
+
+function darkenColor(hex, pct) {
+  const [r, g, b] = hexToRgb(hex);
+  return rgbToHex(r * (1 - pct), g * (1 - pct), b * (1 - pct));
+}
+
+function ensureDistinct(awayColor, homeColor) {
+  if (colorDistance(awayColor, homeColor) > 60) return { away: awayColor, home: homeColor };
+  // Lighten the lighter one by 20%, darken the darker one by 20%
+  if (luminance(awayColor) >= luminance(homeColor)) {
+    return { away: lightenColor(awayColor, 0.2), home: darkenColor(homeColor, 0.2) };
+  }
+  return { away: darkenColor(awayColor, 0.2), home: lightenColor(homeColor, 0.2) };
+}
+
 export default function GameCard({ game, user, subscribedGames, onToggleSubscribe, onRequestAuth }) {
   const g = game;
+  const { away: awayColorAdj, home: homeColorAdj } = ensureDistinct(g.awayColor || '#999', g.homeColor || '#999');
   const isLive = LIVE_STATUSES.has(g.status);
   const isFinal = g.status === 'STATUS_FINAL';
   const isPre = g.status === 'STATUS_SCHEDULED';
@@ -45,8 +89,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
 
   const aWin = g.awayScore > g.homeScore;
   const hWin = g.homeScore > g.awayScore;
-  const aColor = isLive || isFinal ? (aWin ? g.awayColor : '#ccc') : '#ccc';
-  const hColor = isLive || isFinal ? (hWin ? g.homeColor : '#ccc') : '#ccc';
+  const aColor = isLive || isFinal ? (aWin ? awayColorAdj : '#ccc') : '#ccc';
+  const hColor = isLive || isFinal ? (hWin ? homeColorAdj : '#ccc') : '#ccc';
 
   let borderClass = 'bg-white rounded-xl transition-all duration-300';
   let alertColor = null;
@@ -63,7 +107,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
       padding: '12px',
       borderRadius: '12px',
       border: alertColor ? `3px solid ${alertColor}` : '1px solid #e0e0e0',
-      borderTop: alertColor ? `3px solid ${alertColor}` : `3px solid ${g.homeColor || '#dce6f0'}`,
+      borderTop: alertColor ? `3px solid ${alertColor}` : `3px solid ${homeColorAdj || '#dce6f0'}`,
       boxShadow: alertColor ? `0 0 0 3px ${alertColor}40` : '0 1px 3px rgba(0,0,0,0.08)',
     }}>
       {/* Top bar */}
@@ -116,7 +160,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
           <div>
             <div
               className="text-lg font-black tracking-wide"
-              style={{ color: g.awayColor }}
+              style={{ color: awayColorAdj }}
             >
               {g.awayAbbr}
             </div>
@@ -154,7 +198,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
           <div className="text-right">
             <div
               className="text-lg font-black tracking-wide"
-              style={{ color: g.homeColor }}
+              style={{ color: homeColorAdj }}
             >
               {g.homeAbbr}
             </div>
@@ -173,7 +217,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                   className="rounded-full transition-[width] duration-[1.2s] ease-out flex items-center"
                   style={{
                     width: `${Math.max(g.mom.away, 15)}%`,
-                    backgroundColor: g.awayColor,
+                    backgroundColor: awayColorAdj,
                     height: '100%',
                     justifyContent: 'flex-end',
                     paddingRight: '6px',
@@ -191,8 +235,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                     g.mom.home,
                     g.awayAbbr,
                     g.homeAbbr,
-                    g.awayColor,
-                    g.homeColor,
+                    awayColorAdj,
+                    homeColorAdj,
                   );
                   return <span className={s.text !== 'EVEN' ? 'animate-heartbeat' : ''} style={{ color: s.color, fontWeight: 800 }}>{s.text}</span>;
                 })()}
@@ -202,7 +246,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
                   className="rounded-full transition-[width] duration-[1.2s] ease-out flex items-center"
                   style={{
                     width: `${Math.max(g.mom.home, 15)}%`,
-                    backgroundColor: g.homeColor,
+                    backgroundColor: homeColorAdj,
                     height: '100%',
                     float: 'right',
                     justifyContent: 'flex-start',
@@ -220,8 +264,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
           <Sparkline
             chartAway={g.mom.chartAway}
             chartHome={g.mom.chartHome}
-            awayColor={g.awayColor}
-            homeColor={g.homeColor}
+            awayColor={awayColorAdj}
+            homeColor={homeColorAdj}
             awayAbbr={g.awayAbbr}
             homeAbbr={g.homeAbbr}
             isLive={isLive}
@@ -232,8 +276,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
             plays={g.mom.recentPlays}
             awayAbbr={g.awayAbbr}
             homeAbbr={g.homeAbbr}
-            awayColor={g.awayColor}
-            homeColor={g.homeColor}
+            awayColor={awayColorAdj}
+            homeColor={homeColorAdj}
           />
         </>
       )}
