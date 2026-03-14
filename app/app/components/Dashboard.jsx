@@ -148,7 +148,28 @@ export default function Dashboard() {
   else if (filter === 'PRE') filtered = allGames.filter((g) => g.status === 'STATUS_SCHEDULED');
   else if (filter === 'FINAL') filtered = allGames.filter(isTrulyFinal);
 
-  const live = filtered.filter(isLiveOrLingering);
+  // Estimate time remaining for sorting (lower = closer to ending)
+  function timeRemaining(g) {
+    if (g.status === 'STATUS_FINAL') return -1;
+    if (g.status === 'STATUS_HALFTIME') {
+      // NBA halftime = 2 quarters left, CBB halftime = 1 half left
+      const totalPeriods = g.league === 'NBA' ? 4 : 2;
+      const periodsLeft = totalPeriods - g.period;
+      return periodsLeft * 12 * 60; // ~minutes per period in seconds
+    }
+    const totalPeriods = g.league === 'NBA' ? 4 : 2;
+    const periodMins = g.league === 'NBA' ? 12 : 20;
+    const periodsLeft = Math.max(0, totalPeriods - g.period);
+    // Parse clock "7:13" to seconds
+    let clockSecs = 0;
+    if (g.clock && typeof g.clock === 'string' && g.clock.includes(':')) {
+      const [m, s] = g.clock.split(':').map(Number);
+      clockSecs = (m || 0) * 60 + (s || 0);
+    }
+    return periodsLeft * periodMins * 60 + clockSecs;
+  }
+
+  const live = filtered.filter(isLiveOrLingering).sort((a, b) => timeRemaining(a) - timeRemaining(b));
   const pre = filtered.filter((g) => g.status === 'STATUS_SCHEDULED');
   const final_ = filtered.filter(isTrulyFinal);
 
