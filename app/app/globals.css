@@ -241,7 +241,8 @@ body {
   }
 
   .game-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
   }
 
   .game-card-pad {
@@ -262,6 +263,8 @@ body {
 
   .section-pad {
     padding: 14px;
+    overflow: visible !important;
+    max-height: none !important;
   }
 
   .alert-strip {
