@@ -575,7 +575,7 @@ export default function Dashboard() {
               <>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="text-base font-bold text-[#6b7c93]">
-                    Upcoming Tonight
+                    Upcoming <span style={{ fontSize: '12px', fontWeight: 400, color: '#8494a7' }}>&mdash; all times shown in your local timezone</span>
                   </div>
                   <div className="flex-1 h-px bg-[#ddd]" />
                 </div>

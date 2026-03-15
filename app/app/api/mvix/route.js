@@ -2,7 +2,7 @@
 /** /api/mvix?league=NBA — Get all team rolling MVIX values for a league. */
 
 import { NextResponse } from 'next/server';
-import { getTeamHistory, getTeamRolling, getAllTeamRollings } from '../../../lib/team-mvix';
+import { getTeamHistory, getTeamRolling, getAllTeamRollings, recordGameMvix } from '../../../lib/team-mvix';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +35,20 @@ export async function GET(request) {
     });
   } catch (err) {
     console.error('MVIX API error:', err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function POST(request) {
+  try {
+    const { team, league, gameId, gameDate, won, score, vol } = await request.json();
+    if (!team || !league || !gameId || !gameDate || !vol) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    const result = await recordGameMvix(team, league, gameId, gameDate, won, score, vol);
+    return NextResponse.json(result);
+  } catch (err) {
+    console.error('MVIX POST error:', err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

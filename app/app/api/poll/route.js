@@ -11,7 +11,7 @@ const {
 const { computeMomentumFromPlays } = require('../../../lib/momentum');
 const { detectAlerts } = require('../../../lib/alerts');
 import { computeGameVolatility } from '../../../lib/mvix';
-import { hasGameRecord, recordGameMvix } from '../../../lib/team-mvix';
+import { recordGameMvix } from '../../../lib/team-mvix';
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
 const CACHE_TTL = 10_000; // 10 seconds
@@ -91,47 +91,53 @@ async function buildPollData() {
   const resolvedGames = await Promise.all(detailPromises);
   const timestamp = new Date().toISOString();
 
-  // Fire-and-forget: record MVIX for newly final games
-  recordFinalGameMvix(resolvedGames).catch((err) =>
+  // Fire-and-forget: record MVIX for live and final games
+  recordGamesMvix(resolvedGames).catch((err) =>
     console.error('MVIX record error:', err)
   );
 
   return { games: resolvedGames, timestamp };
 }
 
-const mvixRecorded = new Set(); // in-memory dedup
+const mvixLiveRecorded = new Set(); // games where initial live MVIX was saved
+const mvixFinalized = new Set();   // games where final MVIX was saved
 
-async function recordFinalGameMvix(games) {
+async function recordGamesMvix(games) {
   for (const g of games) {
-    if (g.status !== 'STATUS_FINAL' || !g.mom?.chartAway || !g.mom?.chartHome) continue;
-    // Skip if already recorded this session
-    const awayKey = `${g.awayAbbr}:${g.id}`;
-    const homeKey = `${g.homeAbbr}:${g.id}`;
-    if (mvixRecorded.has(awayKey)) continue;
+    if (!g.mom?.chartAway || !g.mom?.chartHome) continue;
+
+    const isLive = LIVE_STATUSES.has(g.status);
+    const isFinal = g.status === 'STATUS_FINAL';
+    if (!isLive && !isFinal) continue;
+
+    const gameKey = g.id;
+
+    // Skip if already finalized
+    if (mvixFinalized.has(gameKey)) continue;
+    // Skip live games already recorded (only record once at game start)
+    if (isLive && mvixLiveRecorded.has(gameKey)) continue;
 
     try {
-      // Check DB to avoid duplicates across restarts
-      const awayExists = await hasGameRecord(g.awayAbbr, g.id);
-      if (awayExists) {
-        mvixRecorded.add(awayKey);
-        mvixRecorded.add(homeKey);
-        continue;
-      }
-
       const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, g.league);
       if (!vol?.away || !vol?.home) continue;
 
-      const awayWon = g.awayScore > g.homeScore;
       const gameDate = g.gameDate || g.date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
+      const awayWon = isFinal ? g.awayScore > g.homeScore : null;
+      const homeWon = isFinal ? g.homeScore > g.awayScore : null;
 
       await Promise.all([
         recordGameMvix(g.awayAbbr, g.league, g.id, gameDate, awayWon, `${g.awayScore}-${g.homeScore}`, vol.away),
-        recordGameMvix(g.homeAbbr, g.league, g.id, gameDate, !awayWon, `${g.homeScore}-${g.awayScore}`, vol.home),
+        recordGameMvix(g.homeAbbr, g.league, g.id, gameDate, homeWon, `${g.homeScore}-${g.awayScore}`, vol.home),
       ]);
 
-      mvixRecorded.add(awayKey);
-      mvixRecorded.add(homeKey);
-      console.log(`MVIX recorded: ${g.awayAbbr} vs ${g.homeAbbr} (${g.id})`);
+      if (isFinal) {
+        mvixFinalized.add(gameKey);
+        mvixLiveRecorded.delete(gameKey);
+        console.log(`MVIX finalized: ${g.awayAbbr} vs ${g.homeAbbr} (${g.id})`);
+      } else {
+        mvixLiveRecorded.add(gameKey);
+        console.log(`MVIX initial: ${g.awayAbbr} vs ${g.homeAbbr} (${g.id})`);
+      }
     } catch (err) {
       console.error(`MVIX record failed for ${g.id}:`, err.message);
     }

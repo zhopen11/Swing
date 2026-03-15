@@ -89,7 +89,20 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       ${Math.round(rollingMvix * 100) / 100},
       ${n}
     )
-    ON CONFLICT (team, game_id) DO NOTHING
+    ON CONFLICT (team, game_id) DO UPDATE SET
+      won = EXCLUDED.won,
+      score = EXCLUDED.score,
+      mvix = EXCLUDED.mvix,
+      mvix_up = EXCLUDED.mvix_up,
+      mvix_down = EXCLUDED.mvix_down,
+      bias = EXCLUDED.bias,
+      up_inflections = EXCLUDED.up_inflections,
+      down_inflections = EXCLUDED.down_inflections,
+      avg_up_magnitude = EXCLUDED.avg_up_magnitude,
+      avg_down_magnitude = EXCLUDED.avg_down_magnitude,
+      rolling_avg_up_magnitude = EXCLUDED.rolling_avg_up_magnitude,
+      rolling_mvix = EXCLUDED.rolling_mvix,
+      games_in_rolling = EXCLUDED.games_in_rolling
   `;
 
   return {

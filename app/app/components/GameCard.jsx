@@ -16,14 +16,11 @@ function periodLabel(p) {
 
 function formatTime(iso) {
   if (!iso) return '\u2014';
-  return (
-    new Date(iso).toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: 'America/New_York',
-    }) + ' ET'
-  );
+  return new Date(iso).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
 }
 
 function swingLabel(away, home, awayAbbr, homeAbbr, awayColor, homeColor) {
