@@ -1,4 +1,5 @@
 import { sql } from './db.js';
+import { getConference, getConfStrength, adjustMvix, adjustMrvi } from './conference.js';
 
 const ROLLING_WINDOW = 10;
 
@@ -85,6 +86,11 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
   const rollingMvix = allMvix.reduce((a, b) => a + b, 0) / n;
   const rollingAvgUp = allAvgUp.reduce((a, b) => a + b, 0) / n;
 
+  const conf = league === 'CBB' ? getConference(team) : null;
+  const confStr = league === 'CBB' ? getConfStrength(team) : null;
+  const adjMvixVal = league === 'CBB' ? adjustMvix(vol.mvix, team) : null;
+  const adjMrviVal = league === 'CBB' && vol.mrvi != null ? adjustMrvi(vol.mrvi, team) : null;
+
   await sql`
     INSERT INTO team_mvix (
       team, league, game_id, game_date, won, score,
@@ -92,7 +98,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       up_inflections, down_inflections,
       avg_up_magnitude, avg_down_magnitude,
       rolling_avg_up_magnitude, rolling_mvix,
-      mrvi, combo, games_in_rolling
+      mrvi, combo, conf, conf_strength, adj_mvix, adj_mrvi,
+      games_in_rolling
     ) VALUES (
       ${team}, ${league}, ${gameId}, ${gameDate}, ${won}, ${score},
       ${vol.mvix}, ${vol.mvixUp}, ${vol.mvixDown}, ${vol.bias},
@@ -100,7 +107,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       ${vol.avgUpMagnitude}, ${vol.avgDownMagnitude},
       ${Math.round(rollingAvgUp * 100) / 100},
       ${Math.round(rollingMvix * 100) / 100},
-      ${vol.mrvi ?? null}, ${vol.combo ?? null}, ${n}
+      ${vol.mrvi ?? null}, ${vol.combo ?? null},
+      ${conf}, ${confStr}, ${adjMvixVal}, ${adjMrviVal}, ${n}
     )
     ON CONFLICT (team, game_id) DO UPDATE SET
       won = EXCLUDED.won,
@@ -117,6 +125,10 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       rolling_mvix = EXCLUDED.rolling_mvix,
       mrvi = EXCLUDED.mrvi,
       combo = EXCLUDED.combo,
+      conf = EXCLUDED.conf,
+      conf_strength = EXCLUDED.conf_strength,
+      adj_mvix = EXCLUDED.adj_mvix,
+      adj_mrvi = EXCLUDED.adj_mrvi,
       games_in_rolling = EXCLUDED.games_in_rolling
   `;
 

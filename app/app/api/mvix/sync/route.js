@@ -23,7 +23,9 @@ export async function GET() {
              up_inflections AS "upInflections", down_inflections AS "downInflections",
              avg_up_magnitude AS "avgUpMagnitude", avg_down_magnitude AS "avgDownMagnitude",
              rolling_avg_up_magnitude AS "rollingAvgUpMagnitude", rolling_mvix AS "rollingMvix",
-             mrvi, combo, games_in_rolling AS "gamesInRolling"
+             mrvi, combo, conf, conf_strength AS "confStrength",
+             adj_mvix AS "adjMvix", adj_mrvi AS "adjMrvi",
+             games_in_rolling AS "gamesInRolling"
       FROM team_mvix
       ORDER BY game_date ASC, team ASC
     `;
@@ -60,14 +62,18 @@ export async function POST(request) {
             up_inflections, down_inflections,
             avg_up_magnitude, avg_down_magnitude,
             rolling_avg_up_magnitude, rolling_mvix,
-            mrvi, combo, games_in_rolling
+            mrvi, combo, conf, conf_strength, adj_mvix, adj_mrvi,
+            games_in_rolling
           ) VALUES (
             ${r.team}, ${r.league}, ${r.gameId}, ${r.gameDate}, ${r.won}, ${r.score},
             ${r.mvix}, ${r.mvixUp}, ${r.mvixDown}, ${r.bias},
             ${r.upInflections}, ${r.downInflections},
             ${r.avgUpMagnitude}, ${r.avgDownMagnitude},
             ${r.rollingAvgUpMagnitude ?? null}, ${r.rollingMvix ?? null},
-            ${r.mrvi ?? null}, ${r.combo ?? null}, ${r.gamesInRolling ?? 1}
+            ${r.mrvi ?? null}, ${r.combo ?? null},
+            ${r.conf ?? null}, ${r.confStrength ?? null},
+            ${r.adjMvix ?? null}, ${r.adjMrvi ?? null},
+            ${r.gamesInRolling ?? 1}
           )
           ON CONFLICT (team, game_id) DO UPDATE SET
             won = EXCLUDED.won,
@@ -84,6 +90,10 @@ export async function POST(request) {
             rolling_mvix = EXCLUDED.rolling_mvix,
             mrvi = EXCLUDED.mrvi,
             combo = EXCLUDED.combo,
+            conf = EXCLUDED.conf,
+            conf_strength = EXCLUDED.conf_strength,
+            adj_mvix = EXCLUDED.adj_mvix,
+            adj_mrvi = EXCLUDED.adj_mrvi,
             games_in_rolling = EXCLUDED.games_in_rolling
         `;
         imported++;

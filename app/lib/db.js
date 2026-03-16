@@ -92,4 +92,8 @@ export async function initDb() {
 
   await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS mrvi REAL`;
   await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS combo REAL`;
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS conf VARCHAR(10)`;
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS conf_strength REAL`;
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS adj_mvix REAL`;
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS adj_mrvi REAL`;
 }
