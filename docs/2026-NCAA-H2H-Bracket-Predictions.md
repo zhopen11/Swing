@@ -1,56 +1,52 @@
-# 2026 NCAA Tournament Bracket — MVIX + MRVI + Head-to-Head Predictions
+# 2026 NCAA Tournament Bracket — MVIX + MRVI + H2H
 
-## Predicted Champion: (1) MICH defeats (1) DUKE, 84-81
+## Predicted Champion: (1) DUKE defeats (6) UNC, 81-72
 
-## Final Four: DUKE, ARIZ, FLA, MICH
+## Final Four: DUKE, GONZ, UNC, MICH
 
 ## Methodology
 
 | Signal | Weight |
 |---|---|
-| **MRVI** (Rolling 5-game) | 2x |
-| **H2H** (2026 season) | 2x |
-| **Top seed protect** (1/2 seeds) | 3x |
-| **MVIX** (Rolling 10-game) | 1x |
-| **Seed** | 2x for gap>=8, 1x for gap 4-7 |
-| **Close metrics** (<8 diff) | 2x seed bonus |
+| **MRVI** | 2x |
+| **H2H** | 2x |
+| **MVIX** | 1x |
+| **Seed** | 2x (gap>=8), 1x (gap 4-7) |
 
-**Top seed protection:** 1 and 2 seeds receive 3x seed weight bonus (up from 2x), preventing unrealistic upsets from marginal MVIX/MRVI differences.
-
+**Top seed protection:** 1 and 2 seeds receive 2.5x seed weight bonus.
 **Close-metrics rule:** When combined MVIX + MRVI difference < 8, higher seed gets 2x bonus.
 
 ---
 
 ## Round of 64
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| EAST | (1) DUKE vs (16) SIE | 50 | 50 | 46 | 52 | **DUKE** | MRVI SIE, MVIX SIE, top seed protect (1), close (<8) |
-| EAST | (2) CONN vs (15) FUR | 50 | 47 | 67 | 51 | **CONN** | MRVI FUR, MVIX CONN, top seed protect (2) |
+| EAST | (1) DUKE vs (16) SIE | 50 | 50 | 46 | 52 | **DUKE** | MRVI SIE, MVIX SIE, top seed (1) 2.5x, close (<8) |
+| EAST | (2) CONN vs (15) FUR | 50 | 47 | 67 | 51 | **CONN** | MRVI FUR, MVIX CONN, top seed (2) 2.5x |
 | EAST | (3) MSU vs (14) NDSU | 58 | 47 | 43 | 50 | **NDSU** | MRVI NDSU, MVIX NDSU, seed (3v14) |
 | EAST | (4) KU vs (13) CBU | 49 | 46 | 54 | 53 | **KU** | MRVI CBU, MVIX KU, seed (4v13) |
 | EAST | (5) SJU vs (12) UNI | 47 | 50 | 46 | 54 | **SJU** | MRVI UNI, MVIX UNI, seed (5v12), close (<8), seed tiebreak |
 | EAST | (6) LOU vs (11) USF | 60 | 52 | 48 | 54 | **USF** | MRVI USF, MVIX USF, seed (6v11) |
 | EAST | (7) UCLA vs (10) UCF | 48 | 48 | 56 | 43 | **UCLA** | MRVI UCLA, MVIX UCLA |
 | EAST | (8) OSU vs (9) TCU | 56 | 54 | 53 | 47 | **OSU** | MRVI OSU, MVIX TCU |
-| WEST | (1) ARIZ vs (16) LIU | 68 | 43 | 56 | 49 | **ARIZ** | MRVI LIU, MVIX LIU, top seed protect (1), seed tiebreak |
-| WEST | (2) PUR vs (15) QUC | 56 | 47 | 60 | 52 | **PUR** | MRVI QUC, MVIX PUR, top seed protect (2) |
+| WEST | (1) ARIZ vs (16) LIU | 68 | 43 | 56 | 49 | **LIU** | MRVI LIU, MVIX LIU, top seed (1) 2.5x |
+| WEST | (2) PUR vs (15) QUC | 56 | 47 | 60 | 52 | **PUR** | MRVI QUC, MVIX PUR, top seed (2) 2.5x |
 | WEST | (3) GONZ vs (14) KENN | 50 | 53 | 67 | 47 | **GONZ** | MRVI GONZ, MVIX GONZ, seed (3v14) |
 | WEST | (4) ARK vs (13) HAW | 50 | 53 | 56 | 51 | **ARK** | MRVI ARK, MVIX ARK, seed (4v13) |
 | WEST | (5) WIS vs (12) HPU | 50 | 53 | 54 | 51 | **WIS** | MRVI WIS, MVIX WIS, seed (5v12), close (<8) |
 | WEST | (6) BYU vs (11) SMU | 58 | 53 | 54 | 52 | **BYU** | MRVI BYU, MVIX SMU, seed (6v11), close (<8) |
 | WEST | (7) MIA vs (10) MIZ | 55 | 52 | 50 | 43 | **MIA** | MRVI MIA, MVIX MIZ |
 | WEST | (8) VILL vs (9) USU | 57 | 46 | 66 | 53 | **USU** | MRVI USU, MVIX VILL |
-| SOUTH | (1) FLA vs (16) HOW | 49 | 50 | 60 | 46 | **FLA** | MRVI FLA, MVIX FLA, top seed protect (1) |
-| SOUTH | (2) HOU vs (15) IDHO | 52 | 51 | 59 | 50 | **HOU** | MRVI HOU, MVIX HOU, top seed protect (2), close (<8) |
+| SOUTH | (1) FLA vs (16) HOW | 49 | 50 | 60 | 46 | **FLA** | MRVI FLA, MVIX FLA, top seed (1) 2.5x |
+| SOUTH | (2) HOU vs (15) IDHO | 52 | 51 | 59 | 50 | **HOU** | MRVI HOU, MVIX HOU, top seed (2) 2.5x, close (<8) |
 | SOUTH | (3) ILL vs (14) PENN | 61 | 47 | 57 | 50 | **ILL** | MRVI PENN, MVIX PENN, seed (3v14), close (<8) |
 | SOUTH | (4) NEB vs (13) TROY | 45 | 48 | 45 | 51 | **NEB** | MRVI TROY, MVIX NEB, seed (4v13), close (<8) |
 | SOUTH | (5) VAN vs (12) MCN | 62 | 53 | 53 | 48 | **VAN** | MRVI VAN, MVIX MCN, seed (5v12) |
 | SOUTH | (6) UNC vs (11) VCU | 40 | 57 | 54 | 51 | **UNC** | MRVI UNC, MVIX UNC, seed (6v11) |
 | SOUTH | (7) SMC vs (10) TA&M | 47 | 54 | 50 | 46 | **SMC** | MRVI SMC, MVIX SMC |
 | SOUTH | (8) CLEM vs (9) IOWA | 58 | 46 | 62 | 42 | **CLEM** | MRVI CLEM, MVIX CLEM, close (<8) |
-| MIDWEST | (1) MICH vs (16) UMBC | 49 | 50 | 48 | 51 | **MICH** | MRVI UMBC, MVIX UMBC, top seed protect (1), close (<8) |
-| MIDWEST | (2) ISU vs (15) TNST | 49 | 53 | 61 | 46 | **ISU** | MRVI ISU, MVIX ISU, top seed protect (2) |
+| MIDWEST | (1) MICH vs (16) UMBC | 49 | 50 | 48 | 51 | **MICH** | MRVI UMBC, MVIX UMBC, top seed (1) 2.5x, close (<8) |
+| MIDWEST | (2) ISU vs (15) TNST | 49 | 53 | 61 | 46 | **ISU** | MRVI ISU, MVIX ISU, top seed (2) 2.5x |
 | MIDWEST | (3) UVA vs (14) WRST | 58 | 51 | 65 | 47 | **UVA** | MRVI UVA, MVIX UVA, seed (3v14) |
 | MIDWEST | (4) ALA vs (13) HOF | 68 | 50 | 58 | 52 | **HOF** | MRVI HOF, MVIX HOF, seed (4v13) |
 | MIDWEST | (5) TTU vs (12) AKR | 66 | 47 | 50 | 54 | **AKR** | MRVI AKR, MVIX AKR, seed (5v12) |
@@ -64,93 +60,71 @@
 |---|---|---|---|
 | **NDSU** | 14 | 3 | MRVI NDSU, MVIX NDSU, seed (3v14) |
 | **USF** | 11 | 6 | MRVI USF, MVIX USF, seed (6v11) |
+| **LIU** | 16 | 1 | MRVI LIU, MVIX LIU, top seed (1) 2.5x |
 | **USU** | 9 | 8 | MRVI USU, MVIX VILL |
 | **HOF** | 13 | 4 | MRVI HOF, MVIX HOF, seed (4v13) |
 | **AKR** | 12 | 5 | MRVI AKR, MVIX AKR, seed (5v12) |
 | **SLU** | 9 | 8 | MRVI SLU, MVIX SLU |
 
 ---
-
 ## Round of 32
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| EAST | (1) DUKE vs (8) OSU | 50 | 50 | 56 | 54 | **DUKE** | MRVI OSU, MVIX DUKE, top seed protect (1) |
+| EAST | (1) DUKE vs (8) OSU | 50 | 50 | 56 | 54 | **DUKE** | MRVI OSU, MVIX DUKE, top seed (1) 2.5x |
 | EAST | (4) KU vs (5) SJU | 49 | 46 | 47 | 50 | **SJU** | MRVI SJU, MVIX SJU, close (<8) |
 | EAST | (14) NDSU vs (11) USF | 43 | 50 | 48 | 54 | **USF** | MRVI USF, MVIX NDSU |
-| EAST | (2) CONN vs (7) UCLA | 50 | 47 | 48 | 48 | **CONN** | MRVI UCLA, MVIX UCLA, top seed protect (2), close (<8) |
-| WEST | (1) ARIZ vs (9) USU | 68 | 43 | 66 | 53 | **ARIZ** | MRVI USU, MVIX USU, top seed protect (1), seed tiebreak |
+| EAST | (2) CONN vs (7) UCLA | 50 | 47 | 48 | 48 | **CONN** | MRVI UCLA, MVIX UCLA, top seed (2) 2.5x, close (<8) |
+| WEST | (16) LIU vs (9) USU | 56 | 49 | 66 | 53 | **USU** | MRVI USU, MVIX LIU, seed (9v16) |
 | WEST | (4) ARK vs (5) WIS | 50 | 53 | 50 | 53 | **ARK** | MVIX ARK, close (<8) |
 | WEST | (3) GONZ vs (6) BYU | 50 | 53 | 58 | 53 | **GONZ** | MVIX GONZ |
-| WEST | (2) PUR vs (7) MIA | 56 | 47 | 55 | 52 | **PUR** | MRVI MIA, MVIX MIA, top seed protect (2), close (<8) |
-| SOUTH | (1) FLA vs (8) CLEM | 49 | 50 | 58 | 46 | **FLA** | MRVI FLA, MVIX FLA, top seed protect (1) |
+| WEST | (2) PUR vs (7) MIA | 56 | 47 | 55 | 52 | **PUR** | MRVI MIA, MVIX MIA, top seed (2) 2.5x, close (<8) |
+| SOUTH | (1) FLA vs (8) CLEM | 49 | 50 | 58 | 46 | **FLA** | MRVI FLA, MVIX FLA, top seed (1) 2.5x |
 | SOUTH | (4) NEB vs (5) VAN | 45 | 48 | 62 | 53 | **VAN** | MRVI VAN, MVIX NEB |
 | SOUTH | (3) ILL vs (6) UNC | 61 | 47 | 40 | 57 | **UNC** | MRVI UNC, MVIX UNC |
-| SOUTH | (2) HOU vs (7) SMC | 52 | 51 | 47 | 54 | **HOU** | MRVI SMC, MVIX SMC, top seed protect (2), seed tiebreak |
-| MIDWEST | (1) MICH vs (9) SLU | 49 | 50 | 53 | 57 | **MICH** | MRVI SLU, MVIX MICH, top seed protect (1) |
+| SOUTH | (2) HOU vs (7) SMC | 52 | 51 | 47 | 54 | **SMC** | MRVI SMC, MVIX SMC, top seed (2) 2.5x |
+| MIDWEST | (1) MICH vs (9) SLU | 49 | 50 | 53 | 57 | **MICH** | MRVI SLU, MVIX MICH, top seed (1) 2.5x |
 | MIDWEST | (13) HOF vs (12) AKR | 58 | 52 | 50 | 54 | **AKR** | MRVI AKR, MVIX AKR |
 | MIDWEST | (3) UVA vs (6) TENN | 58 | 51 | 50 | 52 | **TENN** | MRVI TENN, MVIX TENN |
-| MIDWEST | (2) ISU vs (7) UK | 49 | 53 | 61 | 50 | **ISU** | MRVI ISU, MVIX ISU, top seed protect (2) |
-
+| MIDWEST | (2) ISU vs (7) UK | 49 | 53 | 61 | 50 | **ISU** | MRVI ISU, MVIX ISU, top seed (2) 2.5x |
 ---
-
 ## Sweet 16
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| EAST | (1) DUKE vs (5) SJU | 50 | 50 | 47 | 50 | **DUKE** | MRVI SJU, MVIX SJU, top seed protect (1), close (<8) |
-| EAST | (11) USF vs (2) CONN | 48 | 54 | 50 | 47 | **CONN** | MRVI USF, MVIX USF, top seed protect (2), seed tiebreak |
-| WEST | (1) ARIZ vs (4) ARK | 68 | 43 | 50 | 53 | **ARIZ** | MRVI ARK, MVIX ARK, top seed protect (1), seed tiebreak |
-| WEST | (3) GONZ vs (2) PUR | 50 | 53 | 56 | 47 | **PUR** | MRVI GONZ, MVIX GONZ, top seed protect (2), seed tiebreak |
-| SOUTH | (1) FLA vs (5) VAN | 49 | 50 | 62 | 53 | **FLA** | MRVI VAN, MVIX FLA, H2H VAN, top seed protect (1), seed tiebreak |
-| SOUTH | (6) UNC vs (2) HOU | 40 | 57 | 52 | 51 | **HOU** | MRVI UNC, MVIX UNC, top seed protect (2), seed tiebreak |
-| MIDWEST | (1) MICH vs (12) AKR | 49 | 50 | 50 | 54 | **MICH** | MRVI AKR, MVIX MICH, top seed protect (1), close (<8) |
-| MIDWEST | (6) TENN vs (2) ISU | 50 | 52 | 49 | 53 | **ISU** | MRVI ISU, MVIX ISU, top seed protect (2), close (<8) |
-
+| EAST | (1) DUKE vs (5) SJU | 50 | 50 | 47 | 50 | **DUKE** | MRVI SJU, MVIX SJU, top seed (1) 2.5x, close (<8) |
+| EAST | (11) USF vs (2) CONN | 48 | 54 | 50 | 47 | **USF** | MRVI USF, MVIX USF, top seed (2) 2.5x |
+| WEST | (9) USU vs (4) ARK | 66 | 53 | 50 | 53 | **ARK** | MRVI ARK, MVIX ARK, seed (4v9) |
+| WEST | (3) GONZ vs (2) PUR | 50 | 53 | 56 | 47 | **GONZ** | MRVI GONZ, MVIX GONZ, top seed (2) 2.5x |
+| SOUTH | (1) FLA vs (5) VAN | 49 | 50 | 62 | 53 | **VAN** | MRVI VAN, MVIX FLA, H2H VAN, top seed (1) 2.5x |
+| SOUTH | (6) UNC vs (7) SMC | 40 | 57 | 47 | 54 | **UNC** | MRVI UNC, MVIX UNC |
+| MIDWEST | (1) MICH vs (12) AKR | 49 | 50 | 50 | 54 | **MICH** | MRVI AKR, MVIX MICH, top seed (1) 2.5x, close (<8) |
+| MIDWEST | (6) TENN vs (2) ISU | 50 | 52 | 49 | 53 | **ISU** | MRVI ISU, MVIX ISU, top seed (2) 2.5x, close (<8) |
 ---
-
 ## Elite 8
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| EAST | (1) DUKE vs (2) CONN | 50 | 50 | 50 | 47 | **DUKE** | MRVI DUKE, MVIX CONN, top seed protect (1), close (<8) |
-| WEST | (1) ARIZ vs (2) PUR | 68 | 43 | 56 | 47 | **ARIZ** | MRVI PUR, MVIX PUR, top seed protect (1), seed tiebreak |
-| SOUTH | (1) FLA vs (2) HOU | 49 | 50 | 52 | 51 | **FLA** | MRVI HOU, MVIX FLA, top seed protect (1), close (<8) |
-| MIDWEST | (1) MICH vs (2) ISU | 49 | 50 | 49 | 53 | **MICH** | MRVI ISU, MVIX MICH, top seed protect (1), close (<8) |
-
+| EAST | (1) DUKE vs (11) USF | 50 | 50 | 48 | 54 | **DUKE** | MRVI USF, MVIX USF, top seed (1) 2.5x, close (<8) |
+| WEST | (4) ARK vs (3) GONZ | 50 | 53 | 50 | 53 | **GONZ** | MRVI GONZ, close (<8) |
+| SOUTH | (5) VAN vs (6) UNC | 62 | 53 | 40 | 57 | **UNC** | MRVI UNC, MVIX UNC |
+| MIDWEST | (1) MICH vs (2) ISU | 49 | 50 | 49 | 53 | **MICH** | MRVI ISU, MVIX MICH, top seed (1) 2.5x, close (<8) |
 ### Regional Champions
-
 | Region | Champion | Seed | MVIX | MRVI |
 |---|---|---|---|---|
 | EAST | **DUKE** | 1 | 50 | 50 |
-| WEST | **ARIZ** | 1 | 68 | 43 |
-| SOUTH | **FLA** | 1 | 49 | 50 |
+| WEST | **GONZ** | 3 | 50 | 53 |
+| SOUTH | **UNC** | 6 | 40 | 57 |
 | MIDWEST | **MICH** | 1 | 49 | 50 |
 
-
 ---
-
 ## Final Four
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| FF | (1) DUKE vs (1) ARIZ | 50 | 50 | 68 | 43 | **DUKE** | MRVI DUKE, MVIX DUKE, top seed protect (1), seed tiebreak |
-| FF | (1) FLA vs (1) MICH | 49 | 50 | 49 | 50 | **MICH** | MRVI MICH, MVIX MICH, top seed protect (1), close (<8) |
-
+| FF | (1) DUKE vs (3) GONZ | 50 | 50 | 50 | 53 | **DUKE** | MRVI GONZ, MVIX GONZ, top seed (1) 2.5x, close (<8) |
+| FF | (6) UNC vs (1) MICH | 40 | 57 | 49 | 50 | **UNC** | MRVI UNC, MVIX UNC, top seed (1) 2.5x |
 ---
-
 ## Championship
-
 | Region | Matchup | MVIX | MRVI | MVIX | MRVI | Pick | Signal |
 |---|---|---|---|---|---|---|---|
-| CHAMP | (1) DUKE vs (1) MICH | 50 | 50 | 49 | 50 | **MICH** | MRVI MICH, MVIX MICH, H2H DUKE, top seed protect (1), close (<8) |
-
-### Predicted Final: (1) MICH 84, (1) DUKE 81
-
+| CHAMP | (1) DUKE vs (6) UNC | 50 | 50 | 40 | 57 | **DUKE** | MRVI UNC, MVIX UNC, H2H DUKE, top seed (1) 2.5x |
+### Predicted Final: (1) DUKE 81, (6) UNC 72
 ---
-
-## Generated March 16, 2026 | 7,946 CBB records | 100% MRVI
-
-## Disclaimer
-
-Predictions based on momentum volatility metrics. Not gambling advice.
+## Generated March 16, 2026 | 7,946 CBB records | 100% MRVI | Top seed: 2.5x
