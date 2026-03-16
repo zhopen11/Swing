@@ -12,7 +12,7 @@ export async function getTeamHistory(team, league, limit = ROLLING_WINDOW) {
            up_inflections AS "upInflections", down_inflections AS "downInflections",
            avg_up_magnitude AS "avgUpMagnitude", avg_down_magnitude AS "avgDownMagnitude",
            rolling_avg_up_magnitude AS "rollingAvgUpMagnitude", rolling_mvix AS "rollingMvix",
-           games_in_rolling AS "gamesInRolling", created_at AS "createdAt"
+           mrvi, combo, games_in_rolling AS "gamesInRolling", created_at AS "createdAt"
     FROM team_mvix
     WHERE team = ${team} AND league = ${league}
     ORDER BY game_date DESC
@@ -35,7 +35,7 @@ export async function getTeamRolling(team, league) {
   const avgUpI = history.reduce((s, h) => s + h.upInflections, 0) / n;
   const avgDnI = history.reduce((s, h) => s + h.downInflections, 0) / n;
 
-  return {
+  const result = {
     team,
     league,
     gamesInRolling: n,
@@ -46,6 +46,18 @@ export async function getTeamRolling(team, league) {
     rollingDownInflections: Math.round(avgDnI * 100) / 100,
     lastGameDate: history[0].gameDate,
   };
+
+  // Include MRVI rolling for CBB teams
+  const mrviRows = history.filter((h) => h.mrvi != null);
+  if (mrviRows.length > 0) {
+    result.rollingMrvi = Math.round(mrviRows.reduce((s, h) => s + h.mrvi, 0) / mrviRows.length * 100) / 100;
+    const comboRows = history.filter((h) => h.combo != null);
+    if (comboRows.length > 0) {
+      result.rollingCombo = Math.round(comboRows.reduce((s, h) => s + h.combo, 0) / comboRows.length * 100) / 100;
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -79,7 +91,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       mvix, mvix_up, mvix_down, bias,
       up_inflections, down_inflections,
       avg_up_magnitude, avg_down_magnitude,
-      rolling_avg_up_magnitude, rolling_mvix, games_in_rolling
+      rolling_avg_up_magnitude, rolling_mvix,
+      mrvi, combo, games_in_rolling
     ) VALUES (
       ${team}, ${league}, ${gameId}, ${gameDate}, ${won}, ${score},
       ${vol.mvix}, ${vol.mvixUp}, ${vol.mvixDown}, ${vol.bias},
@@ -87,7 +100,7 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       ${vol.avgUpMagnitude}, ${vol.avgDownMagnitude},
       ${Math.round(rollingAvgUp * 100) / 100},
       ${Math.round(rollingMvix * 100) / 100},
-      ${n}
+      ${vol.mrvi ?? null}, ${vol.combo ?? null}, ${n}
     )
     ON CONFLICT (team, game_id) DO UPDATE SET
       won = EXCLUDED.won,
@@ -102,6 +115,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       avg_down_magnitude = EXCLUDED.avg_down_magnitude,
       rolling_avg_up_magnitude = EXCLUDED.rolling_avg_up_magnitude,
       rolling_mvix = EXCLUDED.rolling_mvix,
+      mrvi = EXCLUDED.mrvi,
+      combo = EXCLUDED.combo,
       games_in_rolling = EXCLUDED.games_in_rolling
   `;
 
@@ -119,7 +134,7 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
  */
 export async function getRolling3Excluding(team, league, excludeGameId) {
   const { rows } = await sql`
-    SELECT mvix, avg_up_magnitude AS "avgUpMagnitude"
+    SELECT mvix, avg_up_magnitude AS "avgUpMagnitude", mrvi, combo
     FROM team_mvix
     WHERE team = ${team} AND league = ${league} AND game_id != ${excludeGameId}
     ORDER BY game_date DESC
@@ -127,10 +142,20 @@ export async function getRolling3Excluding(team, league, excludeGameId) {
   `;
   if (rows.length === 0) return null;
   const avgMvix = rows.reduce((s, r) => s + r.mvix, 0) / rows.length;
-  return {
+  const result = {
     mvix: Math.round(avgMvix * 10) / 10,
     games: rows.length,
   };
+  // Include MRVI/combo for CBB teams that have it
+  const mrviRows = rows.filter((r) => r.mrvi != null);
+  if (mrviRows.length > 0) {
+    result.mrvi = Math.round(mrviRows.reduce((s, r) => s + r.mrvi, 0) / mrviRows.length * 10) / 10;
+    const comboRows = rows.filter((r) => r.combo != null);
+    if (comboRows.length > 0) {
+      result.combo = Math.round(comboRows.reduce((s, r) => s + r.combo, 0) / comboRows.length * 10) / 10;
+    }
+  }
+  return result;
 }
 
 /**

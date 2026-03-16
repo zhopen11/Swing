@@ -1,4 +1,4 @@
-/** Compute MVIX volatility metrics from momentum chart data. */
+/** Compute MVIX and MRVI volatility metrics from momentum chart data. */
 
 function gameSeconds(point, league) {
   const p = point.p || 1;
@@ -60,6 +60,60 @@ function countInflections(d2) {
     }
   }
   return { up, down };
+}
+
+/**
+ * Compute MRVI (Momentum Relative Volatility Index) from a chart series.
+ * Adapts Dorsey's RVI: uses rolling stddev of momentum, classified by direction,
+ * smoothed with Wilder's exponential method.
+ * Returns 0-100 value, or null if insufficient data.
+ */
+function computeMRVI(chart, stdPeriod = 8, smoothPeriod = 14) {
+  const n = chart.length;
+  if (n < stdPeriod + 2) return null;
+
+  const values = chart.map((p) => p.v);
+
+  // Step 1: Rolling standard deviation
+  const stddevs = new Array(n).fill(0);
+  for (let i = stdPeriod - 1; i < n; i++) {
+    let sum = 0;
+    for (let j = i - stdPeriod + 1; j <= i; j++) sum += values[j];
+    const mean = sum / stdPeriod;
+    let variance = 0;
+    for (let j = i - stdPeriod + 1; j <= i; j++) variance += (values[j] - mean) ** 2;
+    stddevs[i] = Math.sqrt(variance / stdPeriod);
+  }
+
+  // Step 2: Classify direction
+  const upVol = new Array(n).fill(0);
+  const downVol = new Array(n).fill(0);
+  for (let i = stdPeriod; i < n; i++) {
+    if (values[i] > values[i - 1]) {
+      upVol[i] = stddevs[i];
+    } else if (values[i] < values[i - 1]) {
+      downVol[i] = stddevs[i];
+    } else {
+      upVol[i] = stddevs[i] / 2;
+      downVol[i] = stddevs[i] / 2;
+    }
+  }
+
+  // Step 3: Wilder's exponential smoothing
+  const alpha = 1 / smoothPeriod;
+  const start = stdPeriod;
+  let smoothUp = upVol[start];
+  let smoothDown = downVol[start];
+
+  for (let i = start + 1; i < n; i++) {
+    smoothUp = alpha * upVol[i] + (1 - alpha) * smoothUp;
+    smoothDown = alpha * downVol[i] + (1 - alpha) * smoothDown;
+  }
+
+  // Step 4: MRVI
+  const total = smoothUp + smoothDown;
+  if (total === 0) return 50;
+  return Math.round((100 * smoothUp / total) * 10) / 10;
 }
 
 /**
@@ -130,8 +184,21 @@ export function computeGameVolatility(chartAway, chartHome, league) {
     };
   }
 
-  return {
-    away: compute(chartAway),
-    home: compute(chartHome),
-  };
+  const awayVol = compute(chartAway);
+  const homeVol = compute(chartHome);
+
+  // MRVI for CBB only
+  if (league === 'CBB') {
+    awayVol.mrvi = computeMRVI(chartAway.map((p) => ({ v: p.v })));
+    homeVol.mrvi = computeMRVI(chartHome.map((p) => ({ v: p.v })));
+    // CBB combo score: -mvix + mrvi (higher = better)
+    if (awayVol.mrvi !== null) {
+      awayVol.combo = Math.round((-awayVol.mvix + awayVol.mrvi) * 10) / 10;
+    }
+    if (homeVol.mrvi !== null) {
+      homeVol.combo = Math.round((-homeVol.mvix + homeVol.mrvi) * 10) / 10;
+    }
+  }
+
+  return { away: awayVol, home: homeVol };
 }

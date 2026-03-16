@@ -82,9 +82,14 @@ export async function initDb() {
       avg_down_magnitude REAL,
       rolling_avg_up_magnitude REAL,
       rolling_mvix REAL,
+      mrvi REAL,
+      combo REAL,
       games_in_rolling INTEGER DEFAULT 1,
       created_at TIMESTAMP DEFAULT now(),
       UNIQUE(team, game_id)
     )
   `;
+
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS mrvi REAL`;
+  await sql`ALTER TABLE team_mvix ADD COLUMN IF NOT EXISTS combo REAL`;
 }
