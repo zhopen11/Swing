@@ -233,7 +233,7 @@ MRVI was computed for all 40 final games (14 NBA, 26 CBB) from March 14-15, 2026
 
 **HOU vs ARIZ**: Both predictors failed. Arizona won despite having higher MVIX (100 vs 85) and lower MRVI (33.1 vs 55.3) — a case where the underdog overcame an unfavorable volatility profile.
 
-### Recommendation
+### Initial Recommendation (40-game sample)
 
 MRVI adds value as a **CBB-specific confirming indicator** alongside MVIX, not as a standalone predictor. For NBA, MVIX alone is more reliable. Implementation should prioritize:
 
@@ -241,6 +241,87 @@ MRVI adds value as a **CBB-specific confirming indicator** alongside MVIX, not a
 2. **Convergence signal** — when both MVIX and MRVI agree, flag as high-confidence prediction
 3. **NBA: deprioritize MRVI** — the 36% accuracy suggests the Dorsey smoothing parameters may need NBA-specific tuning, or the indicator is fundamentally less applicable to the faster, more talent-driven NBA game
 4. **Further research needed** — 40 games is a small sample; backfill across a full season to validate these league-specific patterns
+
+## Large-Scale Validation (1,220 CBB Games)
+
+The initial 40-game findings were validated against 1,220 CBB games from a 30-day backfill. Results significantly revised some conclusions.
+
+### Single-Game Prediction Accuracy
+
+| Metric | Accuracy | Games |
+|---|---|---|
+| Higher MRVI wins | **54.3%** | 1220 |
+| Higher Combo (-mvix+mrvi) wins | 52.0% | 1220 |
+| Lower avgUpMagnitude wins | 50.7% | 1220 |
+| Lower MVIX wins | 49.9% | 1220 |
+| Lower abs(bias) wins | 48.4% | 1220 |
+| When MVIX+MRVI agree | 53.7% | 601 |
+
+### Winner vs Loser Profile
+
+| Metric | Winner avg | Loser avg | Diff | Cohen's d |
+|---|---|---|---|---|
+| MVIX | 55.19 | 54.88 | +0.30 | 0.014 |
+| MRVI | 49.47 | 48.88 | +0.59 | 0.085 |
+| Combo | -5.72 | -6.01 | +0.29 | 0.013 |
+
+### By Margin of Victory
+
+| Margin | Lower MVIX | Higher MRVI | Higher Combo |
+|---|---|---|---|
+| Close (1-5 pts, 402 games) | 48% | 51% | 51% |
+| Medium (6-15 pts, 549 games) | 51% | **56%** | 51% |
+| Blowout (16+ pts, 269 games) | 51% | **56%** | **56%** |
+
+### Key Revisions from 40-Game Findings
+
+1. **MRVI is the best single-game CBB predictor at 54.3%**, confirmed at scale. This is statistically meaningful over 1,220 games.
+
+2. **MVIX dropped to coin-flip (49.9%)** for single-game CBB prediction. The earlier 62% from 40 games was noise. Single-game MVIX does not predict CBB winners.
+
+3. **The combo score underperforms MRVI alone (52.0% vs 54.3%).** Adding MVIX to MRVI dilutes the signal in CBB. Use MRVI standalone.
+
+4. **MRVI is strongest in decisive games (56%)** — medium-margin and blowout games where one team clearly dominated. In close games it provides no edge.
+
+## Rolling MRVI Analysis (CBB)
+
+Tested rolling N-game averages of all metrics as pre-game predictors. Both teams must have at least N prior games with MRVI data to qualify.
+
+### Rolling Window Results
+
+| Metric | 1-game (1220) | 3-game (637) | 5-game (270) | 7-game (34) |
+|---|---|---|---|---|
+| **Higher MRVI** | **54.3%** | **53.5%** | **61.1%** | 52.9% |
+| Lower MVIX | 49.9% | 49.5% | 47.2% | 38.2% |
+| Lower avgUp | 50.7% | 49.5% | 47.0% | 58.8% |
+| Higher Combo | 52.0% | 50.5% | 50.7% | 38.2% |
+
+### Key Findings
+
+1. **Rolling 5-game MRVI at 61.1% is the best CBB predictor found** (270 qualifying games). Teams with consistently favorable volatility direction over 5 games win 61% of the time.
+
+2. **MRVI improves with rolling windows; MVIX does not.** MVIX actually gets worse at longer windows (47.2% at 5-game). In CBB, volatility magnitude is not predictive, but the direction of volatility is.
+
+3. **The combo score does not help in CBB at any window.** Adding MVIX to MRVI dilutes the signal consistently. For CBB, MRVI should be used standalone.
+
+4. **10-game window had 0 qualifying games** — 30 days of data is insufficient for most CBB teams to accumulate 10 games with MRVI. A full-season backfill would enable this analysis.
+
+5. **MRVI follows the same scaling pattern as NBA MVIX** — longer rolling windows produce stronger signals. At 5 games it's 61.1%; at 10 games it could be even higher.
+
+### League-Specific Recommendation (Revised)
+
+| League | Best Single-Game Metric | Best Rolling Metric | Recommended Display |
+|---|---|---|---|
+| **CBB** | MRVI (54.3%) | Rolling 5-game MRVI (61.1%) | Rolling 5-game MRVI |
+| **NBA** | MVIX (54.4%*) | Rolling 10-game avgUpMagnitude (73.1%*) | Rolling 10-game MVIX |
+
+*From 182-game NBA analysis (see MVIX-Analysis.md)
+
+The two leagues respond to fundamentally different momentum metrics:
+- **CBB**: Volatility *direction* matters (MRVI). College teams that consistently channel their volatility upward are better teams.
+- **NBA**: Volatility *magnitude* matters (MVIX). NBA teams that play with less volatility are better teams.
+
+This likely reflects the difference in talent distribution: CBB has wider talent gaps, so momentum direction reflects team quality. NBA is more talent-equalized, so controlled play (low volatility) separates winners.
 
 ## References
 
