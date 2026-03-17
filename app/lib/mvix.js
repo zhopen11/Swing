@@ -187,17 +187,15 @@ export function computeGameVolatility(chartAway, chartHome, league) {
   const awayVol = compute(chartAway);
   const homeVol = compute(chartHome);
 
-  // MRVI for CBB only
-  if (league === 'CBB') {
-    awayVol.mrvi = computeMRVI(chartAway.map((p) => ({ v: p.v })));
-    homeVol.mrvi = computeMRVI(chartHome.map((p) => ({ v: p.v })));
-    // CBB combo score: -mvix + mrvi (higher = better)
-    if (awayVol.mrvi !== null) {
-      awayVol.combo = Math.round((-awayVol.mvix + awayVol.mrvi) * 10) / 10;
-    }
-    if (homeVol.mrvi !== null) {
-      homeVol.combo = Math.round((-homeVol.mvix + homeVol.mrvi) * 10) / 10;
-    }
+  // MRVI for all leagues
+  awayVol.mrvi = computeMRVI(chartAway.map((p) => ({ v: p.v })));
+  homeVol.mrvi = computeMRVI(chartHome.map((p) => ({ v: p.v })));
+  // Combo score: -mvix + mrvi (higher = better)
+  if (awayVol.mrvi !== null) {
+    awayVol.combo = Math.round((-awayVol.mvix + awayVol.mrvi) * 10) / 10;
+  }
+  if (homeVol.mrvi !== null) {
+    homeVol.combo = Math.round((-homeVol.mvix + homeVol.mrvi) * 10) / 10;
   }
 
   return { away: awayVol, home: homeVol };

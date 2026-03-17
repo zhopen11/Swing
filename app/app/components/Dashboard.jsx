@@ -7,6 +7,7 @@ import AuthModal from './AuthModal';
 import Footer from './Footer';
 import SportsNav from './SportsNav';
 import SettingsModal from './SettingsModal';
+import DatePicker, { toApiDate } from './DatePicker';
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
 const REFRESH_MS = 10000;
@@ -27,6 +28,8 @@ export default function Dashboard() {
   const [authMode, setAuthMode] = useState('signin');
   const [showSettings, setShowSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null); // null = today/live, "YYYY-MM-DD" = historical
+  const [availableDates, setAvailableDates] = useState([]);
   const rootRef = useRef(null);
   const timerRef = useRef(null);
   const clockRef = useRef(null);
@@ -64,7 +67,11 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/api/poll?_t=' + Date.now());
+      let url = '/api/poll?_t=' + Date.now();
+      if (selectedDate) {
+        url += '&date=' + toApiDate(selectedDate);
+      }
+      const res = await fetch(url);
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const data = await res.json();
       setGames(data.games || []);
@@ -75,16 +82,13 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [selectedDate]);
 
+  // Fetch available dates on mount
   useEffect(() => {
-    setCurrentTime(new Date());
-    fetchData();
-    timerRef.current = setInterval(fetchData, REFRESH_MS);
-    clockRef.current = setInterval(() => setCurrentTime(new Date()), 30000);
-    fetch('/api/otd')
+    fetch('/api/dates')
       .then((r) => r.json())
-      .then((d) => d.event && setOtd(d.event))
+      .then((d) => setAvailableDates(d.dates || []))
       .catch(() => {});
     fetch('/api/auth/me')
       .then((r) => r.json())
@@ -95,11 +99,27 @@ export default function Dashboard() {
         }
       })
       .catch(() => {});
+    fetch('/api/otd')
+      .then((r) => r.json())
+      .then((d) => d.event && setOtd(d.event))
+      .catch(() => {});
+  }, []);
+
+  // Fetch games + set up polling (only poll live for today)
+  useEffect(() => {
+    setCurrentTime(new Date());
+    setLoading(true);
+    fetchData();
+    if (!selectedDate) {
+      // Live mode: poll every 10s
+      timerRef.current = setInterval(fetchData, REFRESH_MS);
+    }
+    clockRef.current = setInterval(() => setCurrentTime(new Date()), 30000);
     return () => {
       clearInterval(timerRef.current);
       clearInterval(clockRef.current);
     };
-  }, [fetchData]);
+  }, [fetchData, selectedDate]);
 
   const handleSignOut = async () => {
     try {
@@ -109,6 +129,12 @@ export default function Dashboard() {
     } catch (err) {
       console.error('Sign out failed:', err);
     }
+  };
+
+  const handleDateChange = (date) => {
+    setSelectedDate(date);
+    // Switch filter: historical shows ALL, going back to today shows LIVE
+    setFilter(date ? 'ALL' : 'LIVE');
   };
 
   const openAuth = (mode) => {
@@ -236,12 +262,18 @@ export default function Dashboard() {
       })
     : '\u2014';
 
-  const filters = [
-    { key: 'LIVE', label: `LIVE (${liveCount})`, dot: true },
-    { key: 'FINAL', label: `FINAL (${finalCount})` },
-    { key: 'PRE', label: `UPCOMING (${preCount})` },
-    { key: 'ALL', label: `ALL (${allGames.length})` },
-  ];
+  const isHistorical = !!selectedDate;
+  const filters = isHistorical
+    ? [
+        { key: 'ALL', label: `ALL (${allGames.length})` },
+        { key: 'FINAL', label: `FINAL (${finalCount})` },
+      ]
+    : [
+        { key: 'LIVE', label: `LIVE (${liveCount})`, dot: true },
+        { key: 'FINAL', label: `FINAL (${finalCount})` },
+        { key: 'PRE', label: `UPCOMING (${preCount})` },
+        { key: 'ALL', label: `ALL (${allGames.length})` },
+      ];
 
   return (
     <div
@@ -283,12 +315,14 @@ export default function Dashboard() {
           </div>
         </div>
         <div className="header-live-section text-right">
-          <div className="flex items-center justify-end mb-1" style={{ gap: '10px' }}>
-            <span className="rounded-full bg-[#C0392B] animate-pulse" style={{ width: '12px', height: '12px' }} />
-            <span className="font-bold text-[#C0392B]" style={{ fontSize: '20px' }}>
-              <span className="font-mono">{liveCount}</span> LIVE
-            </span>
-          </div>
+          {!isHistorical && (
+            <div className="flex items-center justify-end mb-1" style={{ gap: '10px' }}>
+              <span className="rounded-full bg-[#C0392B] animate-pulse" style={{ width: '12px', height: '12px' }} />
+              <span className="font-bold text-[#C0392B]" style={{ fontSize: '20px' }}>
+                <span className="font-mono">{liveCount}</span> LIVE
+              </span>
+            </div>
+          )}
           <div className="text-sm text-[#6b7c93]">
             <span className="font-mono">{timeStr}</span> &middot; {dateStr}
           </div>
@@ -377,66 +411,78 @@ export default function Dashboard() {
       {/* Sports nav */}
       {!isFullscreen && <SportsNav />}
 
-      {/* Filter tabs */}
-      {!isFullscreen && <div className="filter-bar bg-white border-b border-[#dce6f0]">
-        {filters.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => setFilter(f.key)}
-            className={`border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-150 ${
-              filter === f.key
-                ? 'bg-[#001c55] text-white'
-                : 'bg-transparent text-[#001c55] hover:bg-[#dce6f0]'
-            }`}
-            style={{ padding: '6px 12px' }}
-          >
-            {f.dot && filter !== f.key ? '\u{1F534} ' : ''}
-            {f.label}
-          </button>
-        ))}
-        <div className="filter-refresh flex items-center gap-2">
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{ padding: '4px 10px', fontSize: '24px' }}
-            className={`bg-[#1493ff] text-white border-none rounded-lg leading-none cursor-pointer transition-opacity duration-150 ${
-              refreshing ? 'opacity-40 pointer-events-none animate-spin' : 'hover:opacity-85'
-            }`}
-          >
-            &#x27F3;
-          </button>
-          <span className="refresh-label text-sm text-[#8494a7]">
-            Refreshes every 10s
-          </span>
-        </div>
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+      {/* Date picker + Filter tabs */}
+      {!isFullscreen && (
+        <div className="filter-bar bg-white border-b border-[#dce6f0]">
+          <DatePicker
+            selectedDate={selectedDate}
+            onDateChange={handleDateChange}
+            availableDates={availableDates}
+          />
           <div style={{ width: '1px', height: '24px', background: '#dce6f0' }} />
-          <button
-            onClick={() => setFilter('CLV')}
-            className={`border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-150 ${
-              filter === 'CLV'
-                ? 'bg-[#001c55] text-white'
-                : 'bg-transparent text-[#001c55] hover:bg-[#dce6f0]'
-            }`}
-            style={{ padding: '6px 12px' }}
-          >
-            CLV
-          </button>
-          {(filter === 'LIVE' || filter === 'ALL') && <>
+          {filters.map((f) => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-150 ${
+                filter === f.key
+                  ? 'bg-[#001c55] text-white'
+                  : 'bg-transparent text-[#001c55] hover:bg-[#dce6f0]'
+              }`}
+              style={{ padding: '6px 12px' }}
+            >
+              {f.dot && filter !== f.key ? '\u{1F534} ' : ''}
+              {f.label}
+            </button>
+          ))}
+          {!isHistorical && (
+            <div className="filter-refresh flex items-center gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing}
+                style={{ padding: '4px 10px', fontSize: '24px' }}
+                className={`bg-[#1493ff] text-white border-none rounded-lg leading-none cursor-pointer transition-opacity duration-150 ${
+                  refreshing ? 'opacity-40 pointer-events-none animate-spin' : 'hover:opacity-85'
+                }`}
+              >
+                &#x27F3;
+              </button>
+              <span className="refresh-label text-sm text-[#8494a7]">
+                Refreshes every 10s
+              </span>
+            </div>
+          )}
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '1px', height: '24px', background: '#dce6f0' }} />
             <button
-              onClick={toggleFullscreen}
-              title="Fullscreen mode"
-              className="border-none rounded-lg cursor-pointer transition-all duration-150 bg-transparent text-[#001c55] hover:bg-[#dce6f0]"
-              style={{ padding: '6px 10px', display: 'flex', alignItems: 'center' }}
+              onClick={() => setFilter('CLV')}
+              className={`border-none rounded-lg text-base font-bold cursor-pointer transition-all duration-150 ${
+                filter === 'CLV'
+                  ? 'bg-[#001c55] text-white'
+                  : 'bg-transparent text-[#001c55] hover:bg-[#dce6f0]'
+              }`}
+              style={{ padding: '6px 12px' }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-              </svg>
+              CLV
             </button>
-          </>}
+            {(filter === 'LIVE' || filter === 'ALL') && !isHistorical && (
+              <>
+                <div style={{ width: '1px', height: '24px', background: '#dce6f0' }} />
+                <button
+                  onClick={toggleFullscreen}
+                  title="Fullscreen mode"
+                  className="border-none rounded-lg cursor-pointer transition-all duration-150 bg-transparent text-[#001c55] hover:bg-[#dce6f0]"
+                  style={{ padding: '6px 10px', display: 'flex', alignItems: 'center' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                  </svg>
+                </button>
+              </>
+            )}
+          </div>
         </div>
-      </div>}
+      )}
 
       {/* Main content */}
       <main className="main-content">
@@ -500,7 +546,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <>
-            {live.length > 0 && (
+            {live.length > 0 && !isHistorical && (
               <div className="section-pad bg-[#f0f4f9] rounded-xl border border-[#dce6f0] mb-10">
                 <div className="flex items-center gap-3" style={{ marginBottom: '10px' }}>
                   <div className="text-base font-bold text-[#C0392B] flex items-center gap-2">
@@ -571,7 +617,7 @@ export default function Dashboard() {
               </>
             )}
 
-            {pre.length > 0 && (
+            {pre.length > 0 && !isHistorical && (
               <>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="text-base font-bold text-[#6b7c93]">

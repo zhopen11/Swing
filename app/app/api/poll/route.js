@@ -22,12 +22,16 @@ let fetchInFlight = null;
 const finalMomCache = new Map(); // gameId -> momentum data (never changes once final)
 const rolling3Cache = new Map(); // gameId -> { away, home } rolling 3-game MVIX
 
+// Separate cache for historical date requests
+const historicalCache = new Map(); // dateStr -> { data, timestamp }
+const HISTORICAL_CACHE_TTL = 5 * 60 * 1000; // 5 minutes for historical data
+
 export const dynamic = 'force-dynamic';
 
-async function buildPollData() {
+async function buildPollData(dateStr) {
   const [nbaEvents, cbbEvents] = await Promise.all([
-    fetchNbaScoreboard(),
-    fetchCbbScoreboard(),
+    fetchNbaScoreboard(dateStr || undefined),
+    fetchCbbScoreboard(dateStr || undefined),
   ]);
 
   const allEvents = [
@@ -170,11 +174,25 @@ async function recordGamesMvix(games) {
   }
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const dateStr = searchParams.get('date'); // YYYYMMDD format, optional
     const now = Date.now();
 
-    // Return cached response if still fresh
+    // Historical date request — use separate cache, no dedup needed
+    if (dateStr) {
+      const cached = historicalCache.get(dateStr);
+      if (cached && now - cached.timestamp < HISTORICAL_CACHE_TTL) {
+        return Response.json(cached.data);
+      }
+
+      const data = await buildPollData(dateStr);
+      historicalCache.set(dateStr, { data, timestamp: now });
+      return Response.json(data);
+    }
+
+    // Today (live) — original caching + dedup logic
     if (cachedResponse && now - cacheTimestamp < CACHE_TTL) {
       return Response.json(cachedResponse);
     }

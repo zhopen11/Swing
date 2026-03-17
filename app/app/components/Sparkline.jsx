@@ -396,6 +396,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
           <div style={{ textAlign: 'center', fontSize: '13px', color: '#6b7c93', marginTop: '4px' }}>{tooltip.time}</div>
           {tooltip.score && <div style={{ textAlign: 'center', fontSize: '12px' }}><span style={{ color: awayColor, fontWeight: 700 }}>{tooltip.score.awayAbbr}</span> {tooltip.score.awayScore} - <span style={{ color: homeColor, fontWeight: 700 }}>{tooltip.score.homeAbbr}</span> {tooltip.score.homeScore}</div>}
           {tooltip.mvix && !tooltip.mvix.away && <div style={{ textAlign: 'center', fontSize: '11px', color: '#8494a7', marginTop: '2px' }}>MVIX {tooltip.mvix.mvix} &middot; bias {tooltip.mvix.bias > 0 ? '+' : ''}{tooltip.mvix.bias}</div>}
+          {tooltip.mvix && !tooltip.mvix.away && tooltip.mvix.mrvi != null && <div style={{ textAlign: 'center', fontSize: '11px', color: '#8494a7', marginTop: '1px' }}>MRVI {Math.round(tooltip.mvix.mrvi)}</div>}
           <div style={{
             position: 'absolute',
             bottom: '-7px',
@@ -446,6 +447,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
           <div style={{ textAlign: 'center', fontSize: '13px', color: '#6b7c93', marginTop: '4px' }}>{tooltip.time}</div>
           {tooltip.score && <div style={{ textAlign: 'center', fontSize: '12px' }}><span style={{ color: awayColor, fontWeight: 700 }}>{tooltip.score.awayAbbr}</span> {tooltip.score.awayScore} - <span style={{ color: homeColor, fontWeight: 700 }}>{tooltip.score.homeAbbr}</span> {tooltip.score.homeScore}</div>}
           {tooltip.mvix && tooltip.mvix.away && <div style={{ textAlign: 'center', fontSize: '11px', color: '#8494a7', marginTop: '2px' }}>MVIX: <span style={{ color: awayColor }}>{tooltip.mvix.away.mvix}</span> / <span style={{ color: homeColor }}>{tooltip.mvix.home.mvix}</span></div>}
+          {tooltip.mvix && tooltip.mvix.away && tooltip.mvix.away.mrvi != null && tooltip.mvix.home.mrvi != null && <div style={{ textAlign: 'center', fontSize: '11px', color: '#8494a7', marginTop: '1px' }}>MRVI: <span style={{ color: awayColor }}>{Math.round(tooltip.mvix.away.mrvi)}</span> / <span style={{ color: homeColor }}>{Math.round(tooltip.mvix.home.mrvi)}</span></div>}
           <div style={{
             position: 'absolute',
             bottom: '-7px',
@@ -496,6 +498,39 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
                 height: '100%',
                 borderRadius: '3px',
                 background: mvixHome.bias > 5 ? '#00C853' : mvixHome.bias < -5 ? '#C0392B' : '#FFD700',
+                transition: 'width 1s ease-out',
+              }} />
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: homeColor, minWidth: '30px', lineHeight: 1 }}>{homeAbbr}</span>
+          </div>
+        </div>
+      )}
+
+      {/* MRVI Meter */}
+      {mvixAway && mvixHome && mvixAway.mrvi != null && mvixHome.mrvi != null && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', padding: '0 2px' }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: awayColor, minWidth: '30px', textAlign: 'right', lineHeight: 1 }}>{awayAbbr}</span>
+            <div style={{ flex: 1, height: '6px', background: '#ebebeb', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
+              <div style={{
+                width: `${Math.min(100, Math.max(0, mvixAway.mrvi))}%`,
+                height: '100%',
+                borderRadius: '3px',
+                background: mvixAway.mrvi > 55 ? '#00C853' : mvixAway.mrvi < 45 ? '#C0392B' : '#FFD700',
+                transition: 'width 1s ease-out',
+              }} />
+            </div>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7c93', minWidth: '18px', textAlign: 'right', lineHeight: 1 }}>{Math.round(mvixAway.mrvi)}</span>
+          </div>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#8494a7', whiteSpace: 'nowrap', lineHeight: 1 }}>Live MRVI</span>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7c93', minWidth: '18px', lineHeight: 1 }}>{Math.round(mvixHome.mrvi)}</span>
+            <div style={{ flex: 1, height: '6px', background: '#ebebeb', borderRadius: '3px', overflow: 'hidden', position: 'relative', direction: 'rtl' }}>
+              <div style={{
+                width: `${Math.min(100, Math.max(0, mvixHome.mrvi))}%`,
+                height: '100%',
+                borderRadius: '3px',
+                background: mvixHome.mrvi > 55 ? '#00C853' : mvixHome.mrvi < 45 ? '#C0392B' : '#FFD700',
                 transition: 'width 1s ease-out',
               }} />
             </div>
