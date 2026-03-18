@@ -2,5 +2,11 @@
   "framework": "nextjs",
   "git": {
     "deploymentEnabled": true
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/backfill",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

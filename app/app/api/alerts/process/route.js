@@ -43,7 +43,8 @@ async function fetchAllGames() {
           g.awayAbbr,
           g.homeAbbr,
           g.awayId,
-          g.homeId
+          g.homeId,
+          g.league
         );
       }
     }
