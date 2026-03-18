@@ -67,15 +67,15 @@ export default function AlertHistory({ gameId, awayAbbr, homeAbbr, awayColor, ho
                     P{period} {clock}
                   </span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-[#555] mb-1">
-                  <span className="font-mono font-bold">
-                    {awayAbbr} {a.away_score} – {a.home_score} {homeAbbr}
-                  </span>
+                <div className="flex items-center gap-3 text-xs mb-1 font-mono font-bold">
+                  <span style={{ color: awayColor }}>{awayAbbr}</span>
+                  <span className="text-[#555]">{a.away_score} – {a.home_score}</span>
+                  <span style={{ color: homeColor }}>{homeAbbr}</span>
                 </div>
                 <div className="flex gap-4 text-xs">
                   <div>
                     <span className="font-semibold" style={{ color: awayColor }}>{awayAbbr}</span>
-                    <span className="text-[#6b7c93] ml-1">
+                    <span className="text-[#6b7c93] ml-3">
                       Mom {a.away_momentum} · MVIX {a.away_mvix ?? '–'}
                       {a.away_bias != null && <> · Bias {a.away_bias > 0 ? '+' : ''}{a.away_bias}</>}
                       {a.away_mrvi != null && <> · MRVI {Math.round(a.away_mrvi)}</>}
@@ -85,7 +85,7 @@ export default function AlertHistory({ gameId, awayAbbr, homeAbbr, awayColor, ho
                 <div className="flex gap-4 text-xs mt-0.5">
                   <div>
                     <span className="font-semibold" style={{ color: homeColor }}>{homeAbbr}</span>
-                    <span className="text-[#6b7c93] ml-1">
+                    <span className="text-[#6b7c93] ml-3">
                       Mom {a.home_momentum} · MVIX {a.home_mvix ?? '–'}
                       {a.home_bias != null && <> · Bias {a.home_bias > 0 ? '+' : ''}{a.home_bias}</>}
                       {a.home_mrvi != null && <> · MRVI {Math.round(a.home_mrvi)}</>}

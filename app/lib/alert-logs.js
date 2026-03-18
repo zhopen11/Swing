@@ -29,7 +29,7 @@ export async function getAlertLogs(gameId) {
   const { rows } = await sql`
     SELECT * FROM alert_logs
     WHERE game_id = ${gameId}
-    ORDER BY created_at ASC
+    ORDER BY created_at DESC
   `;
   return rows;
 }

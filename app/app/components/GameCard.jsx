@@ -324,8 +324,12 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
       {g.bluffing && (
         <div className="alert-strip mt-3 py-3.5 border-t border-[#f0f0f0] text-base italic leading-snug text-[#C0392B] bg-red-50/50 rounded-b-xl">
           &#x26A1; Score is Bluffing &mdash;{' '}
-          {g.awayScore > g.homeScore ? g.awayAbbr : g.homeAbbr} leads score,{' '}
-          {g.mom.away > g.mom.home ? g.awayAbbr : g.homeAbbr} leads The Swing
+          <span style={{ color: g.awayScore > g.homeScore ? awayColorAdj : homeColorAdj, fontWeight: 700 }}>
+            {g.awayScore > g.homeScore ? g.awayAbbr : g.homeAbbr}
+          </span> leads score,{' '}
+          <span style={{ color: g.mom.away > g.mom.home ? awayColorAdj : homeColorAdj, fontWeight: 700 }}>
+            {g.mom.away > g.mom.home ? g.awayAbbr : g.homeAbbr}
+          </span> leads The Swing
           {g.status === 'STATUS_HALFTIME' && (
             <span className="text-xs opacity-70 not-italic"> &middot; Full half of data</span>
           )}
@@ -334,7 +338,9 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
       {g.comeback && (
         <div className="alert-strip mt-3 py-3.5 border-t border-[#f0f0f0] text-base italic leading-snug text-[#00C853] bg-green-50/50 rounded-b-xl">
           &#x1F440; Comeback Watch &mdash;{' '}
-          {g.awayScore < g.homeScore ? g.awayAbbr : g.homeAbbr} trails score but leads momentum
+          <span style={{ color: g.awayScore < g.homeScore ? awayColorAdj : homeColorAdj, fontWeight: 700 }}>
+            {g.awayScore < g.homeScore ? g.awayAbbr : g.homeAbbr}
+          </span> trails score but leads momentum
           {g.status === 'STATUS_HALFTIME' && (
             <span className="text-xs opacity-70 not-italic"> &middot; Full half of data</span>
           )}
@@ -343,7 +349,9 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
       {g.swingWarning && (
         <div className="alert-strip mt-3 py-3.5 border-t border-[#f0f0f0] text-base italic leading-snug text-[#FFD700] bg-yellow-50/50 rounded-b-xl">
           &#x26A0;&#xFE0F; Swing Warning &mdash; score is close but{' '}
-          {g.mom.away > g.mom.home ? g.awayAbbr : g.homeAbbr} owns the momentum
+          <span style={{ color: g.mom.away > g.mom.home ? awayColorAdj : homeColorAdj, fontWeight: 700 }}>
+            {g.mom.away > g.mom.home ? g.awayAbbr : g.homeAbbr}
+          </span> owns the momentum
           {g.status === 'STATUS_HALFTIME' && (
             <span className="text-xs opacity-70 not-italic"> &middot; Full half of data</span>
           )}
