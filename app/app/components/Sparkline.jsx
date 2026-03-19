@@ -488,9 +488,15 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
               }} />
             </div>
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7c93', minWidth: '18px', textAlign: 'right', lineHeight: 1 }}>{mvixAway.mvix}</span>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: mvixAway.bias > 5 ? '#00C853' : mvixAway.bias < -5 ? '#C0392B' : '#8494a7', minWidth: '24px', lineHeight: 1 }}>
+              {mvixAway.bias > 0 ? '\u2191' : mvixAway.bias < 0 ? '\u2193' : '\u2194'}{mvixAway.bias > 0 ? '+' : ''}{mvixAway.bias}
+            </span>
           </div>
           <span style={{ fontSize: '12px', fontWeight: 700, color: '#8494a7', whiteSpace: 'nowrap', lineHeight: 1 }}>Live MVIX</span>
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 700, color: mvixHome.bias > 5 ? '#00C853' : mvixHome.bias < -5 ? '#C0392B' : '#8494a7', minWidth: '24px', textAlign: 'right', lineHeight: 1 }}>
+              {mvixHome.bias > 0 ? '\u2191' : mvixHome.bias < 0 ? '\u2193' : '\u2194'}{mvixHome.bias > 0 ? '+' : ''}{mvixHome.bias}
+            </span>
             <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7c93', minWidth: '18px', lineHeight: 1 }}>{mvixHome.mvix}</span>
             <div style={{ flex: 1, height: '6px', background: '#ebebeb', borderRadius: '3px', overflow: 'hidden', position: 'relative', direction: 'rtl' }}>
               <div style={{
