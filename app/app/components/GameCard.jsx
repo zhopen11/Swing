@@ -301,7 +301,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
           />
 
           <AlertHistory
-            gameId={g.id}
+            alertLogs={g.alertLogs}
             awayAbbr={g.awayAbbr}
             homeAbbr={g.homeAbbr}
             awayColor={awayColorAdj}

@@ -12,7 +12,7 @@ const { computeMomentumFromPlays } = require('../../../lib/momentum');
 const { detectAlerts } = require('../../../lib/alerts');
 import { computeGameVolatility } from '../../../lib/mvix';
 import { recordGameMvix, getRolling3Excluding } from '../../../lib/team-mvix';
-import { logAlert } from '../../../lib/alert-logs';
+import { logAlert, getAlertLogs } from '../../../lib/alert-logs';
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
 const CACHE_TTL = 10_000; // 10 seconds
@@ -123,6 +123,11 @@ async function buildPollData(dateStr) {
         console.error('Alert log error:', err.message)
       );
     }
+
+    // Attach alert history for games with momentum data
+    try {
+      g.alertLogs = await getAlertLogs(g.id);
+    } catch { g.alertLogs = []; }
 
     return g;
   });

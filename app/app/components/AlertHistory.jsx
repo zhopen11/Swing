@@ -1,28 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const ALERT_STYLES = {
-  bluffing: { label: 'Score is Bluffing', color: '#C0392B', icon: '🎭' },
-  comeback: { label: 'Comeback Watch', color: '#00C853', icon: '🔄' },
-  swingWarning: { label: 'Swing Warning', color: '#FFD700', icon: '⚡' },
+  bluffing: { label: 'Score is Bluffing', color: '#C0392B' },
+  comeback: { label: 'Comeback Watch', color: '#00C853' },
+  swingWarning: { label: 'Swing Warning', color: '#FFD700' },
 };
 
-export default function AlertHistory({ gameId, awayAbbr, homeAbbr, awayColor, homeColor }) {
+export default function AlertHistory({ alertLogs, awayAbbr, homeAbbr, awayColor, homeColor }) {
   const [open, setOpen] = useState(false);
-  const [alerts, setAlerts] = useState(null);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (!open || !gameId || alerts !== null) return;
-
-    setLoading(true);
-    fetch(`/api/games/${gameId}/alerts`)
-      .then(r => r.json())
-      .then(data => setAlerts(data.alerts || []))
-      .catch(() => setAlerts([]))
-      .finally(() => setLoading(false));
-  }, [open, gameId, alerts]);
+  const alerts = alertLogs || [];
 
   return (
     <>
@@ -42,13 +31,10 @@ export default function AlertHistory({ gameId, awayAbbr, homeAbbr, awayColor, ho
       </div>
       {open && (
         <div className="max-h-[240px] overflow-y-auto py-2 scrollbar-thin">
-          {loading && (
-            <div className="text-sm text-[#8494a7] text-center py-2">Loading...</div>
-          )}
-          {alerts && alerts.length === 0 && (
+          {alerts.length === 0 && (
             <div className="text-sm text-[#8494a7] text-center py-2">No swings recorded</div>
           )}
-          {alerts && alerts.map((a, i) => {
+          {alerts.map((a, i) => {
             const style = ALERT_STYLES[a.alert_type] || ALERT_STYLES.bluffing;
             const period = a.period || '?';
             const clock = a.clock || '';
