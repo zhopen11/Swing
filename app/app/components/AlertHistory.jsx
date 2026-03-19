@@ -20,7 +20,7 @@ export default function AlertHistory({ alertLogs, awayAbbr, homeAbbr, awayColor,
         onClick={() => setOpen(!open)}
       >
         <span className="text-sm font-semibold text-[#6b7c93]">
-          {open ? '\u25BE' : '\u25B8'} Swing History
+          {open ? '\u25BE' : '\u25B8'} Swing History{alerts.length > 0 && <span className="ml-2 text-[#8494a7]">({alerts.length})</span>}
         </span>
         <span
           className="text-sm text-[#8494a7] inline-block transition-transform duration-200"
