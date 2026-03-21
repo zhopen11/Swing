@@ -153,7 +153,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
 
       {/* Score row */}
       <div style={{ paddingBottom: '6px' }}>
-        <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
+        <div className="grid grid-cols-3 gap-3 items-center">
           {/* Away team */}
           <div>
             <div
@@ -166,7 +166,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
           </div>
 
           {/* Center score */}
-          <div className="text-center">
+          <div className="text-center" style={{ justifySelf: 'center' }}>
             {isLive || isFinal ? (
               <>
                 <div className="flex items-center justify-center gap-2">
@@ -187,7 +187,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
               </>
             ) : (
               <>
-                <div className="font-mono text-lg text-[#8494a7]">{formatTime(g.date)}</div>
+                <div className="font-mono text-lg text-[#8494a7] whitespace-nowrap">{formatTime(g.date)}</div>
               </>
             )}
           </div>
