@@ -52,12 +52,14 @@ function getTier(avgImpact) {
   return TIERS[TIERS.length - 1];
 }
 
-function SwingerRow({ player, color }) {
+function SwingerRow({ player, color, rank, maxImpact }) {
   const [showPopup, setShowPopup] = useState(false);
   const timerRef = useRef(null);
   const clutch = player.clutchGames > 0;
-  const tier = getTier(Number(player.avgWeightedImpact) || 0);
+  const impact = Number(player.avgWeightedImpact) || 0;
+  const tier = getTier(impact);
   const jersey = player.jersey ? `#${player.jersey}` : '';
+  const barPct = maxImpact > 0 ? Math.min(Math.abs(impact) / maxImpact * 100, 100) : 0;
 
   const openPopup = useCallback(() => {
     setShowPopup(true);
@@ -73,45 +75,44 @@ function SwingerRow({ player, color }) {
   return (
     <div style={{ padding: '3px 0', position: 'relative' }}>
       <div
-        className="flex items-center justify-between gap-1 cursor-pointer"
+        className="flex items-center gap-1 cursor-pointer"
         onClick={openPopup}
       >
-        <span className="text-xs font-semibold text-[#333] truncate">
+        <span className="font-mono font-bold text-[#8494a7] shrink-0" style={{ fontSize: '10px', width: '14px' }}>
+          {rank}
+        </span>
+        <span className="text-xs font-semibold text-[#333] truncate flex-1">
           {player.player}
         </span>
-        {clutch && (
-          <span
-            className="shrink-0"
-            style={{
-              fontSize: '8px',
-              fontWeight: 800,
-              color: '#C0392B',
-              border: '1px solid #C0392B',
-              borderRadius: '2px',
-              padding: '0 2px',
-              lineHeight: '12px',
-            }}
-          >
-            CLUTCH
+        <span className="shrink-0 flex items-center gap-1">
+          {clutch && (
+            <span
+              style={{
+                fontSize: '8px',
+                fontWeight: 800,
+                color: '#C0392B',
+                border: '1px solid #C0392B',
+                borderRadius: '2px',
+                padding: '0 2px',
+                lineHeight: '12px',
+              }}
+            >
+              CL
+            </span>
+          )}
+          <span className="font-mono text-xs" style={{ color: tier.color, fontWeight: 700 }}>
+            {impact > 0 ? '+' : ''}{Math.round(impact)}
           </span>
-        )}
-        <span
-          className="shrink-0 ml-auto"
-          style={{
-            fontSize: '9px',
-            fontWeight: 700,
-            color: tier.color,
-            border: `1px solid ${tier.color}`,
-            borderRadius: '3px',
-            padding: '0 3px',
-            lineHeight: '14px',
-          }}
-        >
-          {tier.label}
         </span>
       </div>
-      <div className="text-[10px] text-[#8494a7]">
-        {player.gamesPlayed} game{Number(player.gamesPlayed) !== 1 ? 's' : ''}
+      <div className="flex items-center gap-2" style={{ marginTop: '2px' }}>
+        <span className="text-[10px] text-[#8494a7] shrink-0" style={{ width: '14px' }}></span>
+        <div className="bg-[#ebebeb] rounded-full overflow-hidden flex-1" style={{ height: '3px' }}>
+          <div className="rounded-full" style={{ width: `${barPct}%`, backgroundColor: tier.color, height: '100%' }} />
+        </div>
+        <span className="text-[10px] text-[#8494a7] shrink-0">
+          {player.gamesPlayed}gm
+        </span>
       </div>
 
       {/* Detail popup */}
@@ -186,8 +187,10 @@ export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwin
   const homeGames = rolling3Home?.games || 0;
   const gamesLabel = awayGames === homeGames ? `Last ${awayGames}gm` : 'Recent';
 
-  const awaySwingers = pregameSwingers?.away || [];
-  const homeSwingers = pregameSwingers?.home || [];
+  const awaySwingers = [...(pregameSwingers?.away || [])].sort((a, b) => Number(b.avgWeightedImpact) - Number(a.avgWeightedImpact));
+  const homeSwingers = [...(pregameSwingers?.home || [])].sort((a, b) => Number(b.avgWeightedImpact) - Number(a.avgWeightedImpact));
+  const allImpacts = [...awaySwingers, ...homeSwingers].map(p => Math.abs(Number(p.avgWeightedImpact)));
+  const maxImpact = Math.max(...allImpacts, 1);
 
   return (
     <>
@@ -241,24 +244,30 @@ export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwin
               <SubsectionHeader title="Top Swingers" />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="text-xs font-bold tracking-wide mb-1" style={{ color: awayColor }}>
+                  <div className="text-xs font-bold tracking-wide mb-1 flex items-center gap-1" style={{ color: awayColor }}>
                     {awayAbbr}
+                    <span className="font-mono" style={{ fontSize: '10px', color: '#555' }}>
+                      ({Math.round(awaySwingers.reduce((s, p) => s + (Number(p.avgWeightedImpact) || 0), 0))} total)
+                    </span>
                   </div>
                   {awaySwingers.length > 0 ? (
                     awaySwingers.map((p, i) => (
-                      <SwingerRow key={i} player={p} color={awayColor} />
+                      <SwingerRow key={i} player={p} color={awayColor} rank={i + 1} maxImpact={maxImpact} />
                     ))
                   ) : (
                     <span className="text-xs text-[#8494a7]">No data</span>
                   )}
                 </div>
                 <div>
-                  <div className="text-xs font-bold tracking-wide mb-1 text-right" style={{ color: homeColor }}>
+                  <div className="text-xs font-bold tracking-wide mb-1 flex items-center justify-end gap-1" style={{ color: homeColor }}>
+                    <span className="font-mono" style={{ fontSize: '10px', color: '#555' }}>
+                      ({Math.round(homeSwingers.reduce((s, p) => s + (Number(p.avgWeightedImpact) || 0), 0))} total)
+                    </span>
                     {homeAbbr}
                   </div>
                   {homeSwingers.length > 0 ? (
                     homeSwingers.map((p, i) => (
-                      <SwingerRow key={i} player={p} color={homeColor} />
+                      <SwingerRow key={i} player={p} color={homeColor} rank={i + 1} maxImpact={maxImpact} />
                     ))
                   ) : (
                     <span className="text-xs text-[#8494a7]">No data</span>
