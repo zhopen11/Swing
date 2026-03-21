@@ -102,19 +102,19 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
 
   return (
     <div className={`${borderClass} game-card-pad`} style={{
-      padding: '12px',
+      padding: '9px 12px',
       borderRadius: '12px',
       border: alertColor ? `3px solid ${alertColor}` : '1px solid #e0e0e0',
       borderTop: alertColor ? `3px solid ${alertColor}` : `3px solid ${homeColorAdj || '#dce6f0'}`,
       boxShadow: alertColor ? `0 0 0 3px ${alertColor}40` : '0 1px 3px rgba(0,0,0,0.08)',
     }}>
       {/* Top bar */}
-      <div className="pb-3 mb-3 border-b border-black/5 flex justify-between items-center">
+      <div className="pb-3 mb-3 border-b border-black/5 flex justify-between items-center" style={{ position: 'relative' }}>
         <span className="text-sm font-semibold text-[#6b7c93]">
           {g.league} &middot; {g.shortName || g.name}
         </span>
         {g.network && (
-          <span className="text-xs font-semibold text-[#8494a7]">{g.network}</span>
+          <span className="text-xs font-semibold text-[#8494a7]" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>{g.network}</span>
         )}
         <div className="flex items-center" style={{ gap: '8px' }}>
           {isLive && (
@@ -205,6 +205,17 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
         </div>
       </div>
 
+      <PregameMatchup
+        rolling3Away={g.rolling3Away}
+        rolling3Home={g.rolling3Home}
+        pregameSwingers={g.pregameSwingers}
+        odds={g.odds}
+        awayAbbr={g.awayAbbr}
+        homeAbbr={g.homeAbbr}
+        awayColor={awayColorAdj}
+        homeColor={homeColorAdj}
+      />
+
       {/* Momentum section */}
       {hasMom && (
         <>
@@ -270,16 +281,6 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
             league={g.league}
             mvixAway={g.mvixAway}
             mvixHome={g.mvixHome}
-          />
-
-          <PregameMatchup
-            rolling3Away={g.rolling3Away}
-            rolling3Home={g.rolling3Home}
-            pregameSwingers={g.pregameSwingers}
-            awayAbbr={g.awayAbbr}
-            homeAbbr={g.homeAbbr}
-            awayColor={awayColorAdj}
-            homeColor={homeColorAdj}
           />
 
           <PlayFeed
@@ -358,8 +359,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
 
       {/* Footer */}
       {!g.bluffing && !g.comeback && !g.swingWarning && (
-        <div className="pt-3 mt-3 border-t border-[#f0f0f0]">
-          <span className="text-sm text-[#6b7c93]">{g.venue}</span>
+        <div className="pt-3 mt-3 border-t border-[#f0f0f0] text-center">
+          <span className="text-xs text-[#6b7c93] italic">{g.venue}</span>
         </div>
       )}
     </div>

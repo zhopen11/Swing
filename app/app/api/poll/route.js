@@ -15,6 +15,7 @@ import { computeGameVolatility } from '../../../lib/mvix';
 import { recordGameMvix, getRolling3Excluding } from '../../../lib/team-mvix';
 import { logAlert, getAlertLogs } from '../../../lib/alert-logs';
 import { getRecentTeamSwingers } from '../../../lib/player-swing';
+import { captureGameOdds, getGameOddsBatch } from '../../../lib/game-odds';
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
 const CACHE_TTL = 10_000; // 10 seconds
@@ -59,6 +60,17 @@ async function buildPollData(dateStr) {
 
   // Parse all events into game objects
   const games = allEvents.map((e) => parseScoreboardEvent(e, e.league));
+
+  // Capture pregame odds to DB (once per game, never updated)
+  // and load stored odds for all games in a single batch query
+  const gamesWithNewOdds = games.filter(g => g.odds);
+  await Promise.all(gamesWithNewOdds.map(g => captureGameOdds(g.id, g.odds).catch(() => {})));
+
+  const allGameIds = games.map(g => g.id);
+  const storedOdds = await getGameOddsBatch(allGameIds);
+  for (const g of games) {
+    g.odds = storedOdds[g.id] || null;
+  }
 
   // For live games, fetch play-by-play in parallel
   const detailPromises = games.map(async (g) => {
@@ -122,7 +134,7 @@ async function buildPollData(dateStr) {
     }
 
     // Attach historical 3-game rolling MVIX (cached per game)
-    if (g.mom && !rolling3Cache.has(g.id)) {
+    if (!rolling3Cache.has(g.id)) {
       try {
         const [awayR, homeR] = await Promise.all([
           getRolling3Excluding(g.awayAbbr, g.league, g.id),

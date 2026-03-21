@@ -126,6 +126,17 @@ export async function initDb() {
   await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS jersey VARCHAR(5)`;
 
   await sql`
+    CREATE TABLE IF NOT EXISTS game_odds (
+      game_id VARCHAR(100) PRIMARY KEY,
+      details VARCHAR(50),
+      spread REAL,
+      over_under REAL,
+      provider VARCHAR(50),
+      captured_at TIMESTAMP DEFAULT now()
+    )
+  `;
+
+  await sql`
     CREATE TABLE IF NOT EXISTS alert_logs (
       id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
       game_id VARCHAR(100) NOT NULL,

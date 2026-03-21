@@ -172,6 +172,12 @@ function parseScoreboardEvent(event, league) {
     homeScore: parseInt(home.score || 0, 10),
     awayConferenceId: awayTeam.conferenceId || null,
     homeConferenceId: homeTeam.conferenceId || null,
+    odds: comp.odds?.[0] ? {
+      details: comp.odds[0].details || null,
+      spread: comp.odds[0].spread ?? null,
+      overUnder: comp.odds[0].overUnder ?? null,
+      provider: comp.odds[0].provider?.name || null,
+    } : null,
     network,
     venue,
     mom: null,

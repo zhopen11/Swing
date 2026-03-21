@@ -174,14 +174,15 @@ function SwingerRow({ player, color, rank, maxImpact }) {
   );
 }
 
-export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwingers, awayAbbr, homeAbbr, awayColor, homeColor }) {
+export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwingers, odds, awayAbbr, homeAbbr, awayColor, homeColor }) {
   const [open, setOpen] = useState(false);
 
   const hasMomentum = (rolling3Away && (rolling3Away.mvix != null || rolling3Away.mrvi != null)) ||
     (rolling3Home && (rolling3Home.mvix != null || rolling3Home.mrvi != null));
   const hasSwingers = pregameSwingers?.away?.length > 0 || pregameSwingers?.home?.length > 0;
+  const hasOdds = odds && (odds.details || odds.overUnder != null);
 
-  if (!hasMomentum && !hasSwingers) return null;
+  if (!hasMomentum && !hasSwingers && !hasOdds) return null;
 
   const awayGames = rolling3Away?.games || 0;
   const homeGames = rolling3Home?.games || 0;
@@ -210,6 +211,24 @@ export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwin
       </div>
       {open && (
         <div style={{ paddingBottom: '6px', marginBottom: '2px', borderLeft: '2px solid #dce6f0', paddingLeft: '10px', background: '#f8fafc', borderRadius: '0 0 6px 6px' }}>
+          {/* Subsection: Lines */}
+          {hasOdds && (
+            <>
+              <SubsectionHeader title="Lines" />
+              <div className="flex items-center justify-center gap-4" style={{ padding: '2px 0' }}>
+                {odds.details && (
+                  <span className="font-mono text-xs font-bold text-[#333]">{odds.details}</span>
+                )}
+                {odds.overUnder != null && (
+                  <span className="font-mono text-xs text-[#6b7c93]">O/U {odds.overUnder}</span>
+                )}
+              </div>
+              {odds.provider && (
+                <div className="text-center" style={{ fontSize: '9px', color: '#8494a7' }}>{odds.provider}</div>
+              )}
+            </>
+          )}
+
           {/* Subsection: Momentum Trends */}
           {hasMomentum && (
             <>
