@@ -55,7 +55,9 @@ function getTier(avgImpact) {
 function SwingerRow({ player, color, rank, maxImpact, advantageColor }) {
   const [showPopup, setShowPopup] = useState(false);
   const timerRef = useRef(null);
-  const clutch = player.clutchGames > 0;
+  const gamesPlayed = Number(player.gamesPlayed) || 1;
+  const clutchRate = Number(player.clutchGames) / gamesPlayed;
+  const clutch = clutchRate > 0.5;
   const impact = Number(player.avgWeightedImpact) || 0;
   const tier = getTier(impact);
   const jersey = player.jersey ? `#${player.jersey}` : '';
