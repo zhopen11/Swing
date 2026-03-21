@@ -87,10 +87,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
   const clockDisplay = g.status === 'STATUS_HALFTIME' ? 'HALFTIME' : g.clock;
   const isSubscribed = user && subscribedGames && subscribedGames.includes(g.id);
 
-  const aWin = g.awayScore > g.homeScore;
-  const hWin = g.homeScore > g.awayScore;
-  const aColor = isLive || isFinal ? (aWin ? awayColorAdj : '#ccc') : '#ccc';
-  const hColor = isLive || isFinal ? (hWin ? homeColorAdj : '#ccc') : '#ccc';
+  const aColor = isLive || isFinal ? awayColorAdj : '#ccc';
+  const hColor = isLive || isFinal ? homeColorAdj : '#ccc';
 
   let borderClass = 'bg-white rounded-xl transition-all duration-300';
   let alertColor = null;
@@ -153,8 +151,8 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
         </div>
       </div>
 
-      {/* Score row — fixed height for vertical alignment */}
-      <div style={{ paddingBottom: '12px', minHeight: '80px' }}>
+      {/* Score row */}
+      <div style={{ paddingBottom: '6px' }}>
         <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center">
           {/* Away team */}
           <div>
@@ -210,7 +208,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
       {/* Momentum section */}
       {hasMom && (
         <>
-          <div className="pb-3 pt-1">
+          <div className="pb-2 pt-0">
             <div className="flex items-center gap-3 mb-1.5">
               <div className="flex-1 bg-[#ebebeb] rounded-full overflow-hidden relative" style={{ height: '26px' }}>
                 <div
