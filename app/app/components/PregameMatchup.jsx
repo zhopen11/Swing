@@ -108,13 +108,10 @@ function SwingerRow({ player, color, rank, maxImpact, advantageColor }) {
         </span>
       </div>
       <div className="flex items-center gap-2" style={{ marginTop: '2px' }}>
-        <span className="text-[10px] text-[#8494a7] shrink-0" style={{ width: '14px' }}></span>
+        <span style={{ width: '14px' }} />
         <div className="bg-[#ebebeb] rounded-full overflow-hidden flex-1" style={{ height: '3px' }}>
           <div className="rounded-full" style={{ width: `${barPct}%`, backgroundColor: advantageColor, height: '100%' }} />
         </div>
-        <span className="text-[10px] text-[#8494a7] shrink-0">
-          {player.gamesPlayed}gm
-        </span>
       </div>
 
       {/* Detail popup */}
@@ -268,7 +265,12 @@ export default function PregameMatchup({ rolling3Away, rolling3Home, pregameSwin
           {/* Subsection: Top Swingers */}
           {hasSwingers && (
             <>
-              <SubsectionHeader title="Top Swingers" />
+              <div className="flex items-center gap-2" style={{ margin: '8px 0 4px' }}>
+                <span className="text-xs font-bold text-[#001c55] uppercase tracking-wide">Top Swingers</span>
+                <div className="flex-1 h-px bg-[#dce6f0]" />
+                <span className="text-[10px] text-[#8494a7]">{gamesLabel}</span>
+                <div className="flex-1 h-px bg-[#dce6f0]" />
+              </div>
               <div className="grid grid-cols-[1fr_1px_1fr] gap-3">
                 <div>
                   <div className="text-xs font-bold tracking-wide mb-1 flex items-center gap-1" style={{ color: awayColor }}>
