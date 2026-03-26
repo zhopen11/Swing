@@ -1,0 +1,3414 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  @page {
+    size: letter;
+    margin: 0.6in 0.5in;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9px;
+      color: #8494a7;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #222;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .cover {
+    text-align: center;
+    padding: 2in 0.5in 1in;
+    page-break-after: always;
+  }
+  .cover h1 {
+    font-size: 36px;
+    color: #001c55;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .cover .subtitle {
+    font-size: 18px;
+    color: #1493ff;
+    font-weight: 600;
+    margin-bottom: 40px;
+  }
+  .cover .season {
+    font-size: 14px;
+    color: #6b7c93;
+    margin-bottom: 6px;
+  }
+  .cover .description {
+    font-size: 11px;
+    color: #8494a7;
+    max-width: 400px;
+    margin: 30px auto 0;
+    line-height: 1.6;
+  }
+  .week-section {
+    page-break-before: always;
+  }
+  .week-section:first-of-type {
+    page-break-before: avoid;
+  }
+  h2 {
+    font-size: 18px;
+    color: #001c55;
+    border-bottom: 2px solid #1493ff;
+    padding-bottom: 4px;
+    margin-bottom: 2px;
+  }
+  .week-dates {
+    font-size: 11px;
+    color: #6b7c93;
+    margin-bottom: 14px;
+  }
+  .conferences-grid {
+    columns: 2;
+    column-gap: 20px;
+  }
+  .conference {
+    break-inside: avoid;
+    margin-bottom: 14px;
+  }
+  .conference h3 {
+    font-size: 11px;
+    font-weight: 800;
+    color: #001c55;
+    background: #eaf0f6;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 4px;
+  }
+  thead th {
+    font-size: 8px;
+    text-transform: uppercase;
+    color: #8494a7;
+    font-weight: 700;
+    padding: 2px 4px;
+    text-align: center;
+    letter-spacing: 0.5px;
+  }
+  thead th.left { text-align: left; }
+  tbody td {
+    padding: 3px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+  }
+  .rank-cell { text-align: center; width: 24px; }
+  .rank {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 50%;
+    font-size: 9px;
+    font-weight: 800;
+    color: #fff;
+  }
+  .gold { background: #FFD700; color: #333; }
+  .silver { background: #aab7c4; }
+  .bronze { background: #cd7f32; }
+  .player-cell { text-align: left; }
+  .player-name {
+    font-weight: 700;
+    font-size: 11px;
+    color: #222;
+  }
+  .player-meta {
+    font-size: 9px;
+    color: #6b7c93;
+    margin-left: 4px;
+  }
+  .clutch {
+    font-size: 7px;
+    font-weight: 800;
+    color: #C0392B;
+    border: 1px solid #C0392B;
+    border-radius: 2px;
+    padding: 0 2px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+  .stat {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: #333;
+  }
+  .stat-small {
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    font-size: 8px;
+    color: #8494a7;
+  }
+  .tier {
+    font-size: 7px;
+    font-weight: 800;
+    border-radius: 2px;
+    padding: 0 3px;
+    margin-left: 4px;
+    vertical-align: middle;
+    border: 1px solid;
+  }
+  .tier-elite { color: #C0392B; border-color: #C0392B; }
+  .tier-excellent { color: #E67E22; border-color: #E67E22; }
+  .tier-above { color: #1493ff; border-color: #1493ff; }
+  .tier-avg { color: #6b7c93; border-color: #6b7c93; }
+  .tier-below { color: #8494a7; border-color: #8494a7; }
+  .footer-note {
+    margin-top: 30px;
+    text-align: center;
+    font-size: 9px;
+    color: #8494a7;
+  }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>THE SWING</h1>
+  <div class="subtitle">Swingers of the Week</div>
+  <div class="season">NCAA Division I Men's Basketball</div>
+  <div class="season">March 2026</div>
+  <div class="description">
+    The top 3 momentum-shifting players per conference each week,
+    ranked by average magnitude-weighted swing impact per game.
+    Players earn the CLUTCH badge for driving momentum shifts in
+    the final 5 minutes with the score within 12 points.
+  </div>
+</div>
+
+
+    <div class="week-section">
+      <h2>Week of 2026-03-02</h2>
+      <p class="week-dates">2026-03-02 &mdash; 2026-03-08</p>
+      <div class="conferences-grid">
+        
+    <div class="conference">
+      <h3>ASUN Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tyler Jackson</span>
+        <span class="player-meta">#2 &middot; EKU</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">195.6</td>
+      <td class="stat-small">279.4 &times;0.7</td>
+      <td class="stat">83.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Rashaud Marshall</span>
+        <span class="player-meta">#5 &middot; APSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">175.5</td>
+      <td class="stat-small">250.7 &times;0.7</td>
+      <td class="stat">74.9%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kamrin Oriol</span>
+        <span class="player-meta">#11 &middot; UNF</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">173.5</td>
+      <td class="stat-small">247.8 &times;0.7</td>
+      <td class="stat">68.8%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>America East Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Gus Yalden</span>
+        <span class="player-meta">#19 &middot; UVM</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">129.9</td>
+      <td class="stat-small">185.5 &times;0.7</td>
+      <td class="stat">56.4%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Okechukwu Okeke</span>
+        <span class="player-meta">#00 &middot; UALB</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">118.4</td>
+      <td class="stat-small">169.2 &times;0.7</td>
+      <td class="stat">78.6%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Timofei Rudovskii</span>
+        <span class="player-meta">#99 &middot; BRY</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">112.7</td>
+      <td class="stat-small">161 &times;0.7</td>
+      <td class="stat">70.5%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>American Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Isaiah Jones</span>
+        <span class="player-meta">#3 &middot; USF</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">148.3</td>
+      <td class="stat-small">185.4 &times;0.8</td>
+      <td class="stat">68.1%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Chance Westry</span>
+        <span class="player-meta">#11 &middot; UAB</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">144.8</td>
+      <td class="stat-small">206.8 &times;0.7</td>
+      <td class="stat">82.1%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Dillon Battie</span>
+        <span class="player-meta">#8 &middot; WICH</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">141.2</td>
+      <td class="stat-small">201.7 &times;0.7</td>
+      <td class="stat">86.5%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Atlantic 10 Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Xavier Amos</span>
+        <span class="player-meta">#13 &middot; LUC</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">165.1</td>
+      <td class="stat-small">235.9 &times;0.7</td>
+      <td class="stat">70.2%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Josh Scovens</span>
+        <span class="player-meta">#4 &middot; DAV</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">151.5</td>
+      <td class="stat-small">216.4 &times;0.7</td>
+      <td class="stat">81.8%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Frank Mitchell</span>
+        <span class="player-meta">#00 &middot; SBU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">149.3</td>
+      <td class="stat-small">213.3 &times;0.7</td>
+      <td class="stat">67.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Atlantic Coast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Cameron Boozer</span>
+        <span class="player-meta">#12 &middot; DUKE</span>
+        
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">215.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">76.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Samet Yigitoglu</span>
+        <span class="player-meta">#24 &middot; SMU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">208.8</td>
+      <td class="stat-small">–</td>
+      <td class="stat">73.6%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Thijs De Ridder</span>
+        <span class="player-meta">#28 &middot; UVA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">179.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">77%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big 12 Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Joseph Tugler</span>
+        <span class="player-meta">#11 &middot; HOU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">268.4</td>
+      <td class="stat-small">–</td>
+      <td class="stat">79.4%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Xavier Edmonds</span>
+        <span class="player-meta">#24 &middot; TCU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">173.3</td>
+      <td class="stat-small">–</td>
+      <td class="stat">68.4%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Motiejus Krivas</span>
+        <span class="player-meta">#13 &middot; ARIZ</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">168.3</td>
+      <td class="stat-small">–</td>
+      <td class="stat">82.5%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big East Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Layden Blocker</span>
+        <span class="player-meta">#2 &middot; DEP</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-elite">Elite</span>
+      </td>
+      <td class="stat">440.9</td>
+      <td class="stat-small">629.9 &times;0.7</td>
+      <td class="stat">96.1%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Adrien Stevens</span>
+        <span class="player-meta">#10 &middot; MARQ</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">226.5</td>
+      <td class="stat-small">323.6 &times;0.7</td>
+      <td class="stat">67.3%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tarris Reed Jr.</span>
+        <span class="player-meta">#5 &middot; CONN</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">223.8</td>
+      <td class="stat-small">–</td>
+      <td class="stat">100%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big Sky Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jaden Steppe</span>
+        <span class="player-meta">#44 &middot; MTST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">173.3</td>
+      <td class="stat-small">247.5 &times;0.7</td>
+      <td class="stat">60.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Terri Miller Jr.</span>
+        <span class="player-meta">#23 &middot; PRST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">155.6</td>
+      <td class="stat-small">222.3 &times;0.7</td>
+      <td class="stat">62.8%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Edwin Suarez Jr.</span>
+        <span class="player-meta">#0 &middot; WEB</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">153.4</td>
+      <td class="stat-small">219.2 &times;0.7</td>
+      <td class="stat">80%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big South Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Luke Williams</span>
+        <span class="player-meta">#8 &middot; CHSO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">147.3</td>
+      <td class="stat-small">210.4 &times;0.7</td>
+      <td class="stat">68.8%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Logan Duncomb</span>
+        <span class="player-meta">#51 &middot; WIN</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">117</td>
+      <td class="stat-small">167.2 &times;0.7</td>
+      <td class="stat">83.9%</td>
+      <td class="stat">3</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jaylon Johnson</span>
+        <span class="player-meta">#3 &middot; RAD</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">111.4</td>
+      <td class="stat-small">159.1 &times;0.7</td>
+      <td class="stat">58.6%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big Ten Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">John Blackwell</span>
+        <span class="player-meta">#25 &middot; WIS</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">268.7</td>
+      <td class="stat-small">–</td>
+      <td class="stat">73.4%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Bruce Thornton</span>
+        <span class="player-meta">#2 &middot; OSU</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">212.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">88.5%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Yaxel Lendeborg</span>
+        <span class="player-meta">#23 &middot; MICH</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">202.4</td>
+      <td class="stat-small">–</td>
+      <td class="stat">85.9%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big West Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Gavin Sykes</span>
+        <span class="player-meta">#11 &middot; LBSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">170</td>
+      <td class="stat-small">242.9 &times;0.7</td>
+      <td class="stat">55.2%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Brayden Fagbemi</span>
+        <span class="player-meta">#0 &middot; UCD</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">129.9</td>
+      <td class="stat-small">185.5 &times;0.7</td>
+      <td class="stat">67.9%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Isaac Johnson</span>
+        <span class="player-meta">#20 &middot; HAW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">126</td>
+      <td class="stat-small">180 &times;0.7</td>
+      <td class="stat">75%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Coastal Athletic Association</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Biggie Patterson</span>
+        <span class="player-meta">#0 &middot; HOF</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">132</td>
+      <td class="stat-small">188.6 &times;0.7</td>
+      <td class="stat">76%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Christian Reeves</span>
+        <span class="player-meta">#32 &middot; COFC</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">121</td>
+      <td class="stat-small">172.9 &times;0.7</td>
+      <td class="stat">81.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Mike Loughnane</span>
+        <span class="player-meta">#4 &middot; NE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">117.4</td>
+      <td class="stat-small">167.7 &times;0.7</td>
+      <td class="stat">82.6%</td>
+      <td class="stat">3</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Conference USA</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">AJ Bates</span>
+        <span class="player-meta">#3 &middot; LT</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">139.4</td>
+      <td class="stat-small">199.2 &times;0.7</td>
+      <td class="stat">66.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Grant Newell</span>
+        <span class="player-meta">#8 &middot; WKU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">135.8</td>
+      <td class="stat-small">194 &times;0.7</td>
+      <td class="stat">65.5%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kaden Cooper</span>
+        <span class="player-meta">#11 &middot; LT</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">128.2</td>
+      <td class="stat-small">183.1 &times;0.7</td>
+      <td class="stat">78.5%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Horizon League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Preist Ryan</span>
+        <span class="player-meta">#4 &middot; CLE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">212.1</td>
+      <td class="stat-small">303 &times;0.7</td>
+      <td class="stat">71.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Vlad Salaridze</span>
+        <span class="player-meta">#7 &middot; YSU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">142.5</td>
+      <td class="stat-small">203.6 &times;0.7</td>
+      <td class="stat">81.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Legend Geeter</span>
+        <span class="player-meta">#23 &middot; DETM</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">141.4</td>
+      <td class="stat-small">202 &times;0.7</td>
+      <td class="stat">78.9%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Ivy League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Chandler Pigge</span>
+        <span class="player-meta">#13 &middot; HARV</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">266.3</td>
+      <td class="stat-small">380.4 &times;0.7</td>
+      <td class="stat">96%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Thomas Batties III</span>
+        <span class="player-meta">#15 &middot; HARV</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">166.8</td>
+      <td class="stat-small">238.3 &times;0.7</td>
+      <td class="stat">76%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">TJ Power</span>
+        <span class="player-meta">#12 &middot; PENN</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">160.4</td>
+      <td class="stat-small">229.2 &times;0.7</td>
+      <td class="stat">83.3%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Metro Atlantic Athletic Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Grant Randall</span>
+        <span class="player-meta">#8 &middot; QUIN</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">233.1</td>
+      <td class="stat-small">333 &times;0.7</td>
+      <td class="stat">84.2%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Khalil Badru</span>
+        <span class="player-meta">#4 &middot; IONA</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">187.3</td>
+      <td class="stat-small">267.6 &times;0.7</td>
+      <td class="stat">78.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Luke Jungers</span>
+        <span class="player-meta">#7 &middot; IONA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">132.2</td>
+      <td class="stat-small">188.9 &times;0.7</td>
+      <td class="stat">63.2%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mid-American Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Javan Simmons</span>
+        <span class="player-meta">#1 &middot; OHIO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">150</td>
+      <td class="stat-small">214.3 &times;0.7</td>
+      <td class="stat">86.1%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Dwayne Wimbley Jr.</span>
+        <span class="player-meta">#2 &middot; MASS</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">116.8</td>
+      <td class="stat-small">166.9 &times;0.7</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Amani Lyles</span>
+        <span class="player-meta">#0 &middot; AKR</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">116.2</td>
+      <td class="stat-small">166 &times;0.7</td>
+      <td class="stat">81.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mid-Eastern Athletic Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Favour Aire</span>
+        <span class="player-meta">#2 &middot; COPP</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">174.4</td>
+      <td class="stat-small">249.1 &times;0.7</td>
+      <td class="stat">77.8%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Bryce Harris</span>
+        <span class="player-meta">#34 &middot; HOW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">156.3</td>
+      <td class="stat-small">240.4 &times;0.65</td>
+      <td class="stat">74%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Cam Gillus</span>
+        <span class="player-meta">#2 &middot; HOW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">149.5</td>
+      <td class="stat-small">230 &times;0.65</td>
+      <td class="stat">84%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Missouri Valley Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Enel St. Bernard</span>
+        <span class="player-meta">#10 &middot; INST</span>
+        
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">253.1</td>
+      <td class="stat-small">361.5 &times;0.7</td>
+      <td class="stat">100%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Aidan Noyes</span>
+        <span class="player-meta">#4 &middot; BEL</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">161.6</td>
+      <td class="stat-small">230.8 &times;0.7</td>
+      <td class="stat">90.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Isaiah West</span>
+        <span class="player-meta">#3 &middot; BEL</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">115.8</td>
+      <td class="stat-small">165.4 &times;0.7</td>
+      <td class="stat">45.5%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mountain West Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jake Hall</span>
+        <span class="player-meta">#23 &middot; UNM</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">155</td>
+      <td class="stat-small">221.5 &times;0.7</td>
+      <td class="stat">65.2%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tucker Anderson</span>
+        <span class="player-meta">#3 &middot; USU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">147.8</td>
+      <td class="stat-small">173.9 &times;0.85</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Mason Falslev</span>
+        <span class="player-meta">#12 &middot; USU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">139.7</td>
+      <td class="stat-small">164.3 &times;0.85</td>
+      <td class="stat">65.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Northeast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Stephen Byard</span>
+        <span class="player-meta">#8 &middot; CHST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">181.2</td>
+      <td class="stat-small">258.8 &times;0.7</td>
+      <td class="stat">76.5%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Darin Smith Jr.</span>
+        <span class="player-meta">#5 &middot; CCSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">159.6</td>
+      <td class="stat-small">228 &times;0.7</td>
+      <td class="stat">58.1%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Doyel Cockrill III</span>
+        <span class="player-meta">#3 &middot; CHST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">146.2</td>
+      <td class="stat-small">208.8 &times;0.7</td>
+      <td class="stat">61.9%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Ohio Valley Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Landren Blocker</span>
+        <span class="player-meta">#7 &middot; SEMO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">195.3</td>
+      <td class="stat-small">279 &times;0.7</td>
+      <td class="stat">100%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Arnas Sakenis</span>
+        <span class="player-meta">#34 &middot; SIUE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">177.7</td>
+      <td class="stat-small">253.9 &times;0.7</td>
+      <td class="stat">76%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tyler King</span>
+        <span class="player-meta">#9 &middot; SIUE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">151.8</td>
+      <td class="stat-small">216.8 &times;0.7</td>
+      <td class="stat">61.1%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Patriot League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jaxson Bell</span>
+        <span class="player-meta">#4 &middot; ARMY</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">142.5</td>
+      <td class="stat-small">203.6 &times;0.7</td>
+      <td class="stat">63.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jalen Cox</span>
+        <span class="player-meta">#3 &middot; COLG</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">129.9</td>
+      <td class="stat-small">185.5 &times;0.7</td>
+      <td class="stat">73%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Michael McNair</span>
+        <span class="player-meta">#20 &middot; BU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">123.6</td>
+      <td class="stat-small">176.6 &times;0.7</td>
+      <td class="stat">73.3%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Southeastern Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Thomas Haugh</span>
+        <span class="player-meta">#10 &middot; FLA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-elite">Elite</span>
+      </td>
+      <td class="stat">394.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kanon Catchings</span>
+        <span class="player-meta">#6 &middot; UGA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-elite">Elite</span>
+      </td>
+      <td class="stat">319.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">73.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Rylan Griffen</span>
+        <span class="player-meta">#3 &middot; TA&M</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">235.7</td>
+      <td class="stat-small">–</td>
+      <td class="stat">67%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Southern Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kaden Stuckey</span>
+        <span class="player-meta">#6 &middot; VMI</span>
+        
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">261</td>
+      <td class="stat-small">372.8 &times;0.7</td>
+      <td class="stat">83.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Linus Holmstrom</span>
+        <span class="player-meta">#4 &middot; VMI</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">211.8</td>
+      <td class="stat-small">302.6 &times;0.7</td>
+      <td class="stat">64.7%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Nils Machowski</span>
+        <span class="player-meta">#21 &middot; WOF</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">157</td>
+      <td class="stat-small">224.3 &times;0.7</td>
+      <td class="stat">53.8%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+      </div>
+    </div>
+    <div class="week-section">
+      <h2>Week of 2026-03-09</h2>
+      <p class="week-dates">2026-03-09 &mdash; 2026-03-15</p>
+      <div class="conferences-grid">
+        
+    <div class="conference">
+      <h3>America East Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Sebastian Robinson</span>
+        <span class="player-meta">#0 &middot; NJIT</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">288.5</td>
+      <td class="stat-small">412.2 &times;0.7</td>
+      <td class="stat">61.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jordan Rogers</span>
+        <span class="player-meta">#3 &middot; NJIT</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">183.2</td>
+      <td class="stat-small">261.7 &times;0.7</td>
+      <td class="stat">94.1%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">DJ Armstrong Jr.</span>
+        <span class="player-meta">#3 &middot; UMBC</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">154.2</td>
+      <td class="stat-small">237.3 &times;0.65</td>
+      <td class="stat">83.2%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>American Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Daniel Rivera</span>
+        <span class="player-meta">#23 &middot; UAB</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">162.7</td>
+      <td class="stat-small">232.4 &times;0.7</td>
+      <td class="stat">92.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Zach Davis</span>
+        <span class="player-meta">#2 &middot; MEM</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">161.2</td>
+      <td class="stat-small">230.3 &times;0.7</td>
+      <td class="stat">71.4%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Rowan Brumbaugh</span>
+        <span class="player-meta">#7 &middot; TULN</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">131.7</td>
+      <td class="stat-small">188.1 &times;0.7</td>
+      <td class="stat">69.3%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Atlantic 10 Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Dejour Reaves</span>
+        <span class="player-meta">#2 &middot; FOR</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">189.9</td>
+      <td class="stat-small">271.3 &times;0.7</td>
+      <td class="stat">68%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tyler Cochran</span>
+        <span class="player-meta">#23 &middot; URI</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">184.9</td>
+      <td class="stat-small">264.1 &times;0.7</td>
+      <td class="stat">61%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Rob Dockery</span>
+        <span class="player-meta">#99 &middot; LAS</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">183.5</td>
+      <td class="stat-small">262.1 &times;0.7</td>
+      <td class="stat">76.1%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Atlantic Coast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Henri Veesaar</span>
+        <span class="player-meta">#13 &middot; UNC</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">199.2</td>
+      <td class="stat-small">–</td>
+      <td class="stat">72.1%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Corey Washington</span>
+        <span class="player-meta">#3 &middot; SMU</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">177.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">70.8%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Lajae Jones</span>
+        <span class="player-meta">#10 &middot; FSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">171.1</td>
+      <td class="stat-small">244.5 &times;0.7</td>
+      <td class="stat">86.7%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big 12 Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">P.J. Haggerty</span>
+        <span class="player-meta">#4 &middot; KSU</span>
+        
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">285.3</td>
+      <td class="stat-small">407.6 &times;0.7</td>
+      <td class="stat">63.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Flory Bidunga</span>
+        <span class="player-meta">#40 &middot; KU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">190.1</td>
+      <td class="stat-small">–</td>
+      <td class="stat">81.6%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Bangot Dak</span>
+        <span class="player-meta">#8 &middot; COLO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">174.4</td>
+      <td class="stat-small">249.2 &times;0.7</td>
+      <td class="stat">90.5%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big East Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Josh Dix</span>
+        <span class="player-meta">#4 &middot; CREI</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">212.4</td>
+      <td class="stat-small">303.4 &times;0.7</td>
+      <td class="stat">72%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Layden Blocker</span>
+        <span class="player-meta">#2 &middot; DEP</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">207.6</td>
+      <td class="stat-small">296.6 &times;0.7</td>
+      <td class="stat">84.2%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Stefan Vaaks</span>
+        <span class="player-meta">#7 &middot; PROV</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">189.2</td>
+      <td class="stat-small">270.3 &times;0.7</td>
+      <td class="stat">61.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big Sky Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Alton Hamilton IV</span>
+        <span class="player-meta">#4 &middot; EWU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">178.6</td>
+      <td class="stat-small">255.2 &times;0.7</td>
+      <td class="stat">84.4%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Quinn Denker</span>
+        <span class="player-meta">#35 &middot; UNCO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">138</td>
+      <td class="stat-small">197.2 &times;0.7</td>
+      <td class="stat">64.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Ibu Yamazaki</span>
+        <span class="player-meta">#54 &middot; UNCO</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">135.8</td>
+      <td class="stat-small">194 &times;0.7</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big Ten Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Nick Boyd</span>
+        <span class="player-meta">#2 &middot; WIS</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">221.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">68%</td>
+      <td class="stat">3</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Oscar Cluff</span>
+        <span class="player-meta">#45 &middot; PUR</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">205.4</td>
+      <td class="stat-small">–</td>
+      <td class="stat">83.3%</td>
+      <td class="stat">4</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Bruce Thornton</span>
+        <span class="player-meta">#2 &middot; OSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">195.9</td>
+      <td class="stat-small">–</td>
+      <td class="stat">77%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big West Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Isaac Johnson</span>
+        <span class="player-meta">#20 &middot; HAW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">131.1</td>
+      <td class="stat-small">187.3 &times;0.7</td>
+      <td class="stat">64.9%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Carl Daughtery Jr.</span>
+        <span class="player-meta">#1 &middot; UCD</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">120.7</td>
+      <td class="stat-small">172.5 &times;0.7</td>
+      <td class="stat">61.5%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Harry Rouhliadeff</span>
+        <span class="player-meta">#14 &middot; HAW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">108.7</td>
+      <td class="stat-small">155.3 &times;0.7</td>
+      <td class="stat">76.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Coastal Athletic Association</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tyler Tejada</span>
+        <span class="player-meta">#15 &middot; TOW</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">158.3</td>
+      <td class="stat-small">226.2 &times;0.7</td>
+      <td class="stat">63.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kavion McClain</span>
+        <span class="player-meta">#2 &middot; MONM</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">138.4</td>
+      <td class="stat-small">197.7 &times;0.7</td>
+      <td class="stat">57.8%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Silas Sunday</span>
+        <span class="player-meta">#33 &middot; HOF</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">105.6</td>
+      <td class="stat-small">150.9 &times;0.7</td>
+      <td class="stat">88.4%</td>
+      <td class="stat">3</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Conference USA</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Corey Stephenson</span>
+        <span class="player-meta">#3 &middot; FIU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">232.8</td>
+      <td class="stat-small">332.6 &times;0.7</td>
+      <td class="stat">85%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Eric Dibami</span>
+        <span class="player-meta">#9 &middot; FIU</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">181.9</td>
+      <td class="stat-small">259.8 &times;0.7</td>
+      <td class="stat">65.5%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Hamed Olayinka</span>
+        <span class="player-meta">#5 &middot; FIU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">149.2</td>
+      <td class="stat-small">213.1 &times;0.7</td>
+      <td class="stat">84.6%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Horizon League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kellen Pickett</span>
+        <span class="player-meta">#4 &middot; WRST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">134.8</td>
+      <td class="stat-small">192.6 &times;0.7</td>
+      <td class="stat">78%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Donovan Rakotonanahary</span>
+        <span class="player-meta">#10 &middot; NKU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">89.6</td>
+      <td class="stat-small">128 &times;0.7</td>
+      <td class="stat">100%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Solomon Callaghan</span>
+        <span class="player-meta">#13 &middot; WRST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">87.4</td>
+      <td class="stat-small">124.8 &times;0.7</td>
+      <td class="stat">66.7%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Ivy League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Ben Eisendrath</span>
+        <span class="player-meta">#5 &middot; HARV</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">160.1</td>
+      <td class="stat-small">228.7 &times;0.7</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Isaac Celiscar</span>
+        <span class="player-meta">#8 &middot; YALE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">130.5</td>
+      <td class="stat-small">186.5 &times;0.7</td>
+      <td class="stat">80.9%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Ryan Sullivan</span>
+        <span class="player-meta">#34 &middot; HARV</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">127.7</td>
+      <td class="stat-small">182.5 &times;0.7</td>
+      <td class="stat">100%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Metro Atlantic Athletic Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Todd Brogna</span>
+        <span class="player-meta">#20 &middot; MRMK</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">114.5</td>
+      <td class="stat-small">163.6 &times;0.7</td>
+      <td class="stat">70%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Gavin Doty</span>
+        <span class="player-meta">#4 &middot; SIE</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">107</td>
+      <td class="stat-small">152.8 &times;0.7</td>
+      <td class="stat">69.5%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Declan Wucherpfennig</span>
+        <span class="player-meta">#44 &middot; FAIR</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">101.3</td>
+      <td class="stat-small">144.7 &times;0.7</td>
+      <td class="stat">85.7%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mid-American Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Troy Glover II</span>
+        <span class="player-meta">#16 &middot; BGSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">227.4</td>
+      <td class="stat-small">324.8 &times;0.7</td>
+      <td class="stat">95%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Delrecco Gillespie</span>
+        <span class="player-meta">#23 &middot; KENT</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">152.8</td>
+      <td class="stat-small">218.3 &times;0.7</td>
+      <td class="stat">78.7%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Aidan Hadaway</span>
+        <span class="player-meta">#10 &middot; OHIO</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">131.3</td>
+      <td class="stat-small">187.5 &times;0.7</td>
+      <td class="stat">61.1%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mid-Eastern Athletic Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Devon Ellis</span>
+        <span class="player-meta">#11 &middot; NORF</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">256.3</td>
+      <td class="stat-small">366.2 &times;0.7</td>
+      <td class="stat">68.4%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Zion Obanla</span>
+        <span class="player-meta">#1 &middot; UMES</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">180.9</td>
+      <td class="stat-small">258.4 &times;0.7</td>
+      <td class="stat">80.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Muazibini Adamu</span>
+        <span class="player-meta">#35 &middot; DSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">121.7</td>
+      <td class="stat-small">173.9 &times;0.7</td>
+      <td class="stat">92.8%</td>
+      <td class="stat">2</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mountain West Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tomislav Buljan</span>
+        <span class="player-meta">#10 &middot; UNM</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">194.3</td>
+      <td class="stat-small">277.5 &times;0.7</td>
+      <td class="stat">73.3%</td>
+      <td class="stat">2</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Andrew Meadow</span>
+        <span class="player-meta">#13 &middot; BOIS</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">158.5</td>
+      <td class="stat-small">226.4 &times;0.7</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Javan Buchanan</span>
+        <span class="player-meta">#22 &middot; BOIS</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">136.6</td>
+      <td class="stat-small">195.2 &times;0.7</td>
+      <td class="stat">68.8%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Northeast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Mason Porter-Brown</span>
+        <span class="player-meta">#6 &middot; LIU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">138.2</td>
+      <td class="stat-small">230.4 &times;0.6</td>
+      <td class="stat">85.7%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Qadir Martin</span>
+        <span class="player-meta">#12 &middot; MERC</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">111.4</td>
+      <td class="stat-small">159.1 &times;0.7</td>
+      <td class="stat">82.1%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Greg Gordon</span>
+        <span class="player-meta">#2 &middot; LIU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">95.3</td>
+      <td class="stat-small">158.8 &times;0.6</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Patriot League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Ben Defty</span>
+        <span class="player-meta">#14 &middot; BU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">169.8</td>
+      <td class="stat-small">242.6 &times;0.7</td>
+      <td class="stat">75.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Donte Tisinger Jr.</span>
+        <span class="player-meta">#21 &middot; BU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">98.3</td>
+      <td class="stat-small">140.4 &times;0.7</td>
+      <td class="stat">100%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Hank Alvey</span>
+        <span class="player-meta">#35 &middot; LEH</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">94.7</td>
+      <td class="stat-small">135.3 &times;0.7</td>
+      <td class="stat">76%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Southeastern Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kanon Catchings</span>
+        <span class="player-meta">#6 &middot; UGA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">274.7</td>
+      <td class="stat-small">–</td>
+      <td class="stat">61.5%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Kobe Knox</span>
+        <span class="player-meta">#4 &middot; SC</span>
+        
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">237</td>
+      <td class="stat-small">338.5 &times;0.7</td>
+      <td class="stat">73.9%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Rashaun Agee</span>
+        <span class="player-meta">#12 &middot; TA&M</span>
+        
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">234.7</td>
+      <td class="stat-small">–</td>
+      <td class="stat">85%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Southern Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Cooper Bowser</span>
+        <span class="player-meta">#21 &middot; FUR</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">247.5</td>
+      <td class="stat-small">353.6 &times;0.7</td>
+      <td class="stat">82.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Brian Taylor II</span>
+        <span class="player-meta">#11 &middot; ETSU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">144.1</td>
+      <td class="stat-small">205.9 &times;0.7</td>
+      <td class="stat">55.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Blake Barkley</span>
+        <span class="player-meta">#13 &middot; ETSU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">69.3</td>
+      <td class="stat-small">99 &times;0.7</td>
+      <td class="stat">80%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+      </div>
+    </div>
+    <div class="week-section">
+      <h2>Week of 2026-03-16</h2>
+      <p class="week-dates">2026-03-16 &mdash; 2026-03-22</p>
+      <div class="conferences-grid">
+        
+    <div class="conference">
+      <h3>Atlantic Coast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jacari White</span>
+        <span class="player-meta">#6 &middot; UVA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-elite">Elite</span>
+      </td>
+      <td class="stat">392</td>
+      <td class="stat-small">–</td>
+      <td class="stat">85.7%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Sam Lewis</span>
+        <span class="player-meta">#5 &middot; UVA</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">152.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">63.2%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Johann Grunloh</span>
+        <span class="player-meta">#17 &middot; UVA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">131.7</td>
+      <td class="stat-small">–</td>
+      <td class="stat">88.2%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big 12 Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Ivan Kharchenkov</span>
+        <span class="player-meta">#8 &middot; ARIZ</span>
+        
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">274.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">85%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Killyan Toure</span>
+        <span class="player-meta">#27 &middot; ISU</span>
+        
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">234.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">73.5%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Koa Peat</span>
+        <span class="player-meta">#10 &middot; ARIZ</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">187.5</td>
+      <td class="stat-small">–</td>
+      <td class="stat">72.7%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Big East Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Bryce Lindsay</span>
+        <span class="player-meta">#2 &middot; VILL</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">145.2</td>
+      <td class="stat-small">–</td>
+      <td class="stat">64.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Duke Brennan</span>
+        <span class="player-meta">#24 &middot; VILL</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">139.1</td>
+      <td class="stat-small">–</td>
+      <td class="stat">57.1%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Tyler Perkins</span>
+        <span class="player-meta">#4 &middot; VILL</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">121.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">65.2%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Coastal Athletic Association</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Victory Onuetu</span>
+        <span class="player-meta">#6 &middot; HOF</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">89.3</td>
+      <td class="stat-small">127.5 &times;0.7</td>
+      <td class="stat">85.7%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">German Plotnikov</span>
+        <span class="player-meta">#25 &middot; HOF</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">79.7</td>
+      <td class="stat-small">113.9 &times;0.7</td>
+      <td class="stat">58.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Biggie Patterson</span>
+        <span class="player-meta">#0 &middot; HOF</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">54.3</td>
+      <td class="stat-small">77.5 &times;0.7</td>
+      <td class="stat">66.7%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Horizon League</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Michael Imariagbe</span>
+        <span class="player-meta">#33 &middot; WRST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">201.5</td>
+      <td class="stat-small">287.8 &times;0.7</td>
+      <td class="stat">77.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">TJ Burch</span>
+        <span class="player-meta">#22 &middot; WRST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">81.6</td>
+      <td class="stat-small">116.5 &times;0.7</td>
+      <td class="stat">55%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Solomon Callaghan</span>
+        <span class="player-meta">#13 &middot; WRST</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">71.7</td>
+      <td class="stat-small">102.4 &times;0.7</td>
+      <td class="stat">80%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mid-American Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Peter Suder</span>
+        <span class="player-meta">#5 &middot; M-OH</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">147.5</td>
+      <td class="stat-small">210.7 &times;0.7</td>
+      <td class="stat">70.8%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Evan Mahaffey</span>
+        <span class="player-meta">#12 &middot; AKR</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">106.2</td>
+      <td class="stat-small">151.7 &times;0.7</td>
+      <td class="stat">78.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Amani Lyles</span>
+        <span class="player-meta">#0 &middot; AKR</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">106.1</td>
+      <td class="stat-small">151.5 &times;0.7</td>
+      <td class="stat">68.4%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Mountain West Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Drake Allen</span>
+        <span class="player-meta">#8 &middot; USU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">84.1</td>
+      <td class="stat-small">99 &times;0.85</td>
+      <td class="stat">70%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Karson Templin</span>
+        <span class="player-meta">#22 &middot; USU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">62.7</td>
+      <td class="stat-small">73.8 &times;0.85</td>
+      <td class="stat">70%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">MJ Collins Jr.</span>
+        <span class="player-meta">#2 &middot; USU</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">45.1</td>
+      <td class="stat-small">53 &times;0.85</td>
+      <td class="stat">59.1%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Northeast Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Greg Gordon</span>
+        <span class="player-meta">#2 &middot; LIU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">90.3</td>
+      <td class="stat-small">150.5 &times;0.6</td>
+      <td class="stat">55.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Caleb Johnson</span>
+        <span class="player-meta">#15 &middot; LIU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">50.3</td>
+      <td class="stat-small">83.8 &times;0.6</td>
+      <td class="stat">83.3%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Shadrak Lasu</span>
+        <span class="player-meta">#22 &middot; LIU</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">24</td>
+      <td class="stat-small">40 &times;0.6</td>
+      <td class="stat">60%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Ohio Valley Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Antoine Lorick III</span>
+        <span class="player-meta">#11 &middot; TNST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">162.4</td>
+      <td class="stat-small">249.8 &times;0.65</td>
+      <td class="stat">82.6%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Aaron Nkrumah</span>
+        <span class="player-meta">#30 &middot; TNST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">61.8</td>
+      <td class="stat-small">95.1 &times;0.65</td>
+      <td class="stat">55.2%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Jabrion Spikes</span>
+        <span class="player-meta">#7 &middot; TNST</span>
+        
+        <span class="tier tier-below">Below Avg</span>
+      </td>
+      <td class="stat">12.4</td>
+      <td class="stat-small">19.1 &times;0.65</td>
+      <td class="stat">66.7%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="conference">
+      <h3>Southeastern Conference</h3>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:30px"></th>
+            <th class="left">Player</th>
+            <th>Adj Impact</th>
+            <th>Raw &times; Conf</th>
+            <th>Efficiency</th>
+            <th>Games</th>
+          </tr>
+        </thead>
+        <tbody>
+          
+    <tr>
+      <td class="rank-cell"><span class="rank gold">1</span></td>
+      <td class="player-cell">
+        <span class="player-name">Otega Oweh</span>
+        <span class="player-meta">#00 &middot; UK</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-excellent">Excellent</span>
+      </td>
+      <td class="stat">265.8</td>
+      <td class="stat-small">–</td>
+      <td class="stat">66.7%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank silver">2</span></td>
+      <td class="player-cell">
+        <span class="player-name">Aiden Sherrell</span>
+        <span class="player-meta">#22 &middot; ALA</span>
+        <span class="clutch">CLUTCH</span>
+        <span class="tier tier-above">Above Avg</span>
+      </td>
+      <td class="stat">239.6</td>
+      <td class="stat-small">–</td>
+      <td class="stat">75%</td>
+      <td class="stat">1</td>
+    </tr>
+    <tr>
+      <td class="rank-cell"><span class="rank bronze">3</span></td>
+      <td class="player-cell">
+        <span class="player-name">Taylor Bol Bowen</span>
+        <span class="player-meta">#7 &middot; ALA</span>
+        
+        <span class="tier tier-avg">Average</span>
+      </td>
+      <td class="stat">199.4</td>
+      <td class="stat-small">–</td>
+      <td class="stat">81.3%</td>
+      <td class="stat">1</td>
+    </tr>
+        </tbody>
+      </table>
+    </div>
+      </div>
+    </div>
+
+<div class="footer-note">
+  Generated by The Swing &middot; 2026-03-21
+</div>
+
+</body>
+</html>
