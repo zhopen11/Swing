@@ -2,6 +2,8 @@
 
 import { sql } from './db.js';
 
+const ROLLING_WINDOW = 10;
+
 /**
  * Record swing impact for all players in a team's game.
  */
@@ -12,14 +14,16 @@ export async function recordPlayerSwingImpact(gameId, gameDate, league, team, le
         game_id, game_date, league, team, athlete_id, player_name,
         total_impact, swing_appearances, positive_plays, negative_plays, efficiency,
         total_swings, up_swings, down_swings,
-        conference_id, conference, weighted_impact, clutch_appearances, jersey
+        conference_id, conference, weighted_impact, clutch_appearances, jersey,
+        mvix, mrvi, combo
       ) VALUES (
         ${gameId}, ${gameDate}, ${league}, ${team}, ${player.athleteId},
         ${player.player}, ${player.totalImpact}, ${player.swingAppearances},
         ${player.positivePlays}, ${player.negativePlays}, ${player.efficiency},
         ${inflectionCounts.total}, ${inflectionCounts.up}, ${inflectionCounts.down},
         ${conferenceId || null}, ${conferenceName || null},
-        ${player.weightedImpact || 0}, ${player.clutchAppearances || 0}, ${player.jersey || null}
+        ${player.weightedImpact || 0}, ${player.clutchAppearances || 0}, ${player.jersey || null},
+        ${player.mvix ?? null}, ${player.mrvi ?? null}, ${player.combo ?? null}
       )
       ON CONFLICT (game_id, team, player_name) DO UPDATE SET
         athlete_id = COALESCE(EXCLUDED.athlete_id, player_swing_impact.athlete_id),
@@ -35,8 +39,45 @@ export async function recordPlayerSwingImpact(gameId, gameDate, league, team, le
         conference = COALESCE(EXCLUDED.conference, player_swing_impact.conference),
         weighted_impact = EXCLUDED.weighted_impact,
         clutch_appearances = EXCLUDED.clutch_appearances,
-        jersey = COALESCE(EXCLUDED.jersey, player_swing_impact.jersey)
+        jersey = COALESCE(EXCLUDED.jersey, player_swing_impact.jersey),
+        mvix = EXCLUDED.mvix,
+        mrvi = EXCLUDED.mrvi,
+        combo = EXCLUDED.combo
     `;
+
+    // Compute and write rolling MVIX/MRVI from the last N games for this player
+    if (player.mvix != null) {
+      const { rows: recent } = await sql`
+        SELECT mvix, mrvi, combo
+        FROM player_swing_impact
+        WHERE player_name = ${player.player}
+          AND team = ${team}
+          AND league = ${league}
+          AND mvix IS NOT NULL
+        ORDER BY game_date DESC
+        LIMIT ${ROLLING_WINDOW}
+      `;
+      if (recent.length > 0) {
+        const rollingMvix = recent.reduce((s, r) => s + r.mvix, 0) / recent.length;
+        const mrviRows = recent.filter((r) => r.mrvi != null);
+        const rollingMrvi = mrviRows.length > 0
+          ? mrviRows.reduce((s, r) => s + r.mrvi, 0) / mrviRows.length
+          : null;
+        const comboRows = recent.filter((r) => r.combo != null);
+        const rollingCombo = comboRows.length > 0
+          ? comboRows.reduce((s, r) => s + r.combo, 0) / comboRows.length
+          : null;
+        await sql`
+          UPDATE player_swing_impact
+          SET rolling_mvix  = ${Math.round(rollingMvix * 100) / 100},
+              rolling_mrvi  = ${rollingMrvi  != null ? Math.round(rollingMrvi  * 100) / 100 : null},
+              rolling_combo = ${rollingCombo != null ? Math.round(rollingCombo * 100) / 100 : null}
+          WHERE game_id    = ${gameId}
+            AND team       = ${team}
+            AND player_name = ${player.player}
+        `;
+      }
+    }
   }
 }
 

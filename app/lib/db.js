@@ -124,6 +124,12 @@ export async function initDb() {
   await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS weighted_impact REAL`;
   await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS clutch_appearances INTEGER DEFAULT 0`;
   await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS jersey VARCHAR(5)`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS mvix INTEGER`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS mrvi REAL`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS combo REAL`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS rolling_mvix REAL`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS rolling_mrvi REAL`;
+  await sql`ALTER TABLE player_swing_impact ADD COLUMN IF NOT EXISTS rolling_combo REAL`;
 
   await sql`
     CREATE TABLE IF NOT EXISTS game_odds (

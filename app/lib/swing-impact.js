@@ -3,6 +3,121 @@
 const { resolveTeam, scorePossession, toMomentum } = require('./momentum');
 const { WINDOW } = require('./config');
 
+// Minimum play counts for meaningful volatility readings
+const MIN_PLAYS_MVIX = 5;
+const MIN_PLAYS_MRVI = 8;
+const ROLLING_WINDOW = 10;
+
+/**
+ * Compute MVIX from a player's chronological possession score sequence.
+ * Uses cumulative score as the series and index as the time axis.
+ * Returns { mvix, mvixUp, mvixDown, bias } or null if insufficient data.
+ */
+function computePlayerMvix(plays) {
+  const n = plays.length;
+  if (n < MIN_PLAYS_MVIX) return null;
+
+  // Build cumulative series
+  const cum = [];
+  let sum = 0;
+  for (let i = 0; i < n; i++) {
+    sum += plays[i];
+    cum.push(sum);
+  }
+
+  // First derivative (central differences, index = 1 time unit)
+  const d1 = [];
+  for (let i = 0; i < n; i++) {
+    let dv;
+    if (i === 0) dv = n > 1 ? cum[1] - cum[0] : 0;
+    else if (i === n - 1) dv = cum[n - 1] - cum[n - 2];
+    else dv = (cum[i + 1] - cum[i - 1]) / 2;
+    d1.push(dv);
+  }
+
+  // Recency-weighted std dev of velocity
+  let weightedMeanSum = 0, weightTotal = 0;
+  for (let i = 0; i < n; i++) {
+    const w = Math.exp(3 * (i / (n - 1) - 1));
+    weightedMeanSum += d1[i] * w;
+    weightTotal += w;
+  }
+  const weightedMean = weightTotal > 0 ? weightedMeanSum / weightTotal : 0;
+  let weightedVarSum = 0;
+  for (let i = 0; i < n; i++) {
+    const w = Math.exp(3 * (i / (n - 1) - 1));
+    weightedVarSum += w * (d1[i] - weightedMean) ** 2;
+  }
+  const weightedStdDev = Math.sqrt(weightTotal > 0 ? weightedVarSum / weightTotal : 0);
+
+  // RAW_MAX: max single-step velocity ≈ max possession score ≈ 3.0
+  const RAW_MAX = 3.0;
+  const mvix = Math.min(100, Math.round((weightedStdDev / RAW_MAX) * 100));
+
+  const posVel = d1.filter((v) => v > 0);
+  const negVel = d1.filter((v) => v < 0);
+  const posStd = posVel.length > 1 ? Math.sqrt(posVel.reduce((s, v) => s + v ** 2, 0) / posVel.length) : 0;
+  const negStd = negVel.length > 1 ? Math.sqrt(negVel.reduce((s, v) => s + v ** 2, 0) / negVel.length) : 0;
+  const mvixUp = Math.min(100, Math.round((posStd / RAW_MAX) * 100));
+  const mvixDown = Math.min(100, Math.round((negStd / RAW_MAX) * 100));
+
+  return { mvix, mvixUp, mvixDown, bias: mvixUp - mvixDown };
+}
+
+/**
+ * Compute MRVI from a player's possession score sequence.
+ * Adapted from Dorsey's RVI: rolling stddev classified by direction,
+ * smoothed with Wilder's exponential method.
+ * Uses smaller periods than team MRVI given shorter player series.
+ */
+function computePlayerMrvi(plays, stdPeriod = 6, smoothPeriod = 10) {
+  const n = plays.length;
+  if (n < stdPeriod + 2) return null;
+
+  const stddevs = new Array(n).fill(0);
+  for (let i = stdPeriod - 1; i < n; i++) {
+    let s = 0;
+    for (let j = i - stdPeriod + 1; j <= i; j++) s += plays[j];
+    const mean = s / stdPeriod;
+    let variance = 0;
+    for (let j = i - stdPeriod + 1; j <= i; j++) variance += (plays[j] - mean) ** 2;
+    stddevs[i] = Math.sqrt(variance / stdPeriod);
+  }
+
+  const upVol = new Array(n).fill(0);
+  const downVol = new Array(n).fill(0);
+  for (let i = stdPeriod; i < n; i++) {
+    if (plays[i] > plays[i - 1]) upVol[i] = stddevs[i];
+    else if (plays[i] < plays[i - 1]) downVol[i] = stddevs[i];
+    else { upVol[i] = stddevs[i] / 2; downVol[i] = stddevs[i] / 2; }
+  }
+
+  const alpha = 1 / smoothPeriod;
+  let smoothUp = upVol[stdPeriod];
+  let smoothDown = downVol[stdPeriod];
+  for (let i = stdPeriod + 1; i < n; i++) {
+    smoothUp = alpha * upVol[i] + (1 - alpha) * smoothUp;
+    smoothDown = alpha * downVol[i] + (1 - alpha) * smoothDown;
+  }
+
+  const total = smoothUp + smoothDown;
+  if (total === 0) return 50;
+  return Math.round((100 * smoothUp / total) * 10) / 10;
+}
+
+/**
+ * Compute player volatility from their full-game possession score sequence.
+ * Returns { mvix, mrvi, combo } or null if insufficient data.
+ */
+function computePlayerVolatility(plays) {
+  if (!plays || plays.length < MIN_PLAYS_MVIX) return null;
+  const mvixResult = computePlayerMvix(plays);
+  if (!mvixResult) return null;
+  const mrvi = plays.length >= MIN_PLAYS_MRVI ? computePlayerMrvi(plays) : null;
+  const combo = mrvi != null ? Math.round((-mvixResult.mvix + mrvi) * 10) / 10 : null;
+  return { mvix: mvixResult.mvix, mrvi, combo };
+}
+
 function gameSeconds(point, league) {
   const p = point.p || 1;
   const c = point.c || '0:00';
@@ -242,22 +357,39 @@ function computeSwingImpact(inflections, batchPlays, teamAbbr, league) {
     }
   }
 
+  // Build full-game possession score sequence per player for MVIX/MRVI
+  const playerPlays = {};
+  for (const batch of batchPlays) {
+    for (const play of batch) {
+      if (play.team === teamAbbr && play.player && play.possessionScore !== 0) {
+        if (!playerPlays[play.player]) playerPlays[play.player] = [];
+        playerPlays[play.player].push(play.possessionScore);
+      }
+    }
+  }
+
   const leaderboard = Object.entries(playerMap)
-    .map(([name, data]) => ({
-      player: name,
-      athleteId: data.athleteId,
-      jersey: data.jersey,
-      totalImpact: Math.round(data.totalImpact * 10) / 10,
-      weightedImpact: Math.round(data.weightedImpact * 10) / 10,
-      swingAppearances: data.swingAppearances,
-      positivePlays: data.positivePlays,
-      negativePlays: data.negativePlays,
-      efficiency: data.swingAppearances > 0
-        ? Math.round((data.positivePlays / data.swingAppearances) * 1000) / 10
-        : 0,
-      clutchAppearances: data.clutchAppearances,
-      clutchPositive: data.clutchPositive,
-    }))
+    .map(([name, data]) => {
+      const vol = computePlayerVolatility(playerPlays[name]);
+      return {
+        player: name,
+        athleteId: data.athleteId,
+        jersey: data.jersey,
+        totalImpact: Math.round(data.totalImpact * 10) / 10,
+        weightedImpact: Math.round(data.weightedImpact * 10) / 10,
+        swingAppearances: data.swingAppearances,
+        positivePlays: data.positivePlays,
+        negativePlays: data.negativePlays,
+        efficiency: data.swingAppearances > 0
+          ? Math.round((data.positivePlays / data.swingAppearances) * 1000) / 10
+          : 0,
+        clutchAppearances: data.clutchAppearances,
+        clutchPositive: data.clutchPositive,
+        mvix: vol?.mvix ?? null,
+        mrvi: vol?.mrvi ?? null,
+        combo: vol?.combo ?? null,
+      };
+    })
     .sort((a, b) => b.weightedImpact - a.weightedImpact);
 
   return { swings, leaderboard };
@@ -301,4 +433,5 @@ module.exports = {
   replayMomentumWithPlayers,
   computeSwingImpact,
   computeGameSwingImpact,
+  computePlayerVolatility,
 };
