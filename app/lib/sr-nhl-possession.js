@@ -99,7 +99,10 @@ function parseZonePossessions(events) {
       // OZ faceoff win starts a new sequence for the winner
       if (ev.zone === 'offensive') {
         const winnerStat = (ev.statistics || []).find(s => s.type === 'faceoff' && s.win);
-        if (winnerStat?.team) {
+        // Only start OZ sequence if zone is offensive from the winner's perspective
+        // (SR attributes faceoffs to the winner, so attribution.id === winner.id should hold,
+        // but this guard makes the intent explicit and handles any edge cases)
+        if (winnerStat?.team && ev.attribution?.id === winnerStat.team.id) {
           current = startSeq(winnerStat.team, ev);
         }
       }
@@ -108,8 +111,10 @@ function parseZonePossessions(events) {
 
     const teamId = ev.attribution?.id;
     if (!teamId || ev.zone !== 'offensive') {
-      // Defensive events during current sequence — add for blocked shot credit resolution
-      if (current && ev.zone === 'defensive' && ev.attribution?.id && ev.attribution.id !== current.team.id) {
+      // Attach blocked shot candidates only — shotmissed events from the opposing team
+      // may carry statistics[].type === 'block' which scoreZoneSequence credits to the defender
+      if (current && ev.event_type === 'shotmissed' && ev.zone === 'defensive'
+          && ev.attribution?.id && ev.attribution.id !== current.team.id) {
         current.events.push(ev);
       }
       continue;
