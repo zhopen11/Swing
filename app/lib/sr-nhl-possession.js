@@ -136,4 +136,50 @@ function parseZonePossessions(events) {
   return sequences;
 }
 
-module.exports = { shotXg, isBlockedShot, getBlockingTeam, parseZonePossessions };
+function scoreZoneSequence(sequence) {
+  let score = 0;
+  let shotCount = 0;
+  const defenseCredits = {}; // teamId -> credit score
+
+  for (const ev of sequence.events) {
+    const type = ev.event_type;
+
+    if (type === 'goal') {
+      score += 3.0;
+      if (shotCount > 0) score += 0.3; // sustained pressure
+      shotCount++;
+    } else if (type === 'shotsaved') {
+      const xg = shotXg(ev);
+      score += xg;
+      if (shotCount > 0) score += 0.3;
+      shotCount++;
+    } else if (type === 'shotmissed') {
+      if (isBlockedShot(ev)) {
+        const blockTeam = getBlockingTeam(ev);
+        if (blockTeam) {
+          defenseCredits[blockTeam.id] = (defenseCredits[blockTeam.id] || 0) + 0.5;
+        }
+        // No shot count increment — blocked shot doesn't register as attempt for shooter
+      } else {
+        const xg = shotXg(ev);
+        score += xg * 0.4;
+        if (shotCount > 0) score += 0.3;
+        shotCount++;
+      }
+    } else if (type === 'giveaway') {
+      score += ev.zone === 'defensive' ? -1.5 : -1.0;
+    } else if (type === 'stoppage' && ev.stoppage_type === 'icing') {
+      score -= 0.5;
+    }
+  }
+
+  // Takeaway fast-break bonus
+  if (sequence.fromTakeaway) score += 1.5;
+
+  return { score, defenseCredits };
+}
+
+module.exports = {
+  shotXg, isBlockedShot, getBlockingTeam,
+  parseZonePossessions, scoreZoneSequence,
+};

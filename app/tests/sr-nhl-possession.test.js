@@ -179,3 +179,93 @@ test('parseZonePossessions — takeaway flag NOT set when more than 8s elapsed',
   const seqs = parseZonePossessions(events);
   assert.equal(seqs[0].fromTakeaway, false);
 });
+
+// ── scoreZoneSequence tests ────────────────────────────────────────────────
+const { scoreZoneSequence } = require('../lib/sr-nhl-possession');
+
+function makeSeq(events, fromTakeaway = false) {
+  return { team: { id: 'A' }, events, fromTakeaway, strength: 'even' };
+}
+
+function shotSavedEv(area, teamId = 'A') {
+  return { event_type: 'shotsaved', zone: 'offensive',
+    attribution: { id: teamId }, location: { action_area: area }, statistics: [] };
+}
+
+function goalEv(teamId = 'A') {
+  return { event_type: 'goal', zone: 'offensive',
+    attribution: { id: teamId }, location: { action_area: 'slot' }, statistics: [] };
+}
+
+function missedEv(area = 'point', teamId = 'A') {
+  return { event_type: 'shotmissed', zone: 'offensive',
+    attribution: { id: teamId }, location: { action_area: area }, statistics: [] };
+}
+
+function blockedEv(shooterId = 'A', defenderId = 'B', area = 'point') {
+  return {
+    event_type: 'shotmissed', zone: 'offensive',
+    attribution: { id: shooterId },
+    location: { action_area: area },
+    statistics: [
+      { type: 'attemptblocked', team: { id: shooterId } },
+      { type: 'block', team: { id: defenderId, name: 'TeamB' } },
+    ],
+  };
+}
+
+function giveawayEv(zone = 'offensive', teamId = 'A') {
+  return { event_type: 'giveaway', zone, attribution: { id: teamId }, statistics: [] };
+}
+
+test('scoreZoneSequence — goal scores +3.0', () => {
+  const result = scoreZoneSequence(makeSeq([goalEv()]));
+  assert.equal(result.score, 3.0);
+});
+
+test('scoreZoneSequence — slot shotsaved scores +1.5', () => {
+  const result = scoreZoneSequence(makeSeq([shotSavedEv('slot')]));
+  assert.equal(result.score, 1.5);
+});
+
+test('scoreZoneSequence — true miss scores 0.4 * xG', () => {
+  // point xG = 0.6, miss = 0.4 * 0.6 = 0.24
+  const result = scoreZoneSequence(makeSeq([missedEv('point')]));
+  assert.ok(Math.abs(result.score - 0.24) < 0.001);
+});
+
+test('scoreZoneSequence — blocked shot gives 0 to shooter, +0.5 defense credit', () => {
+  const result = scoreZoneSequence(makeSeq([blockedEv('A', 'B', 'point')]));
+  assert.equal(result.score, 0);
+  assert.equal(result.defenseCredits['B'], 0.5);
+});
+
+test('scoreZoneSequence — giveaway in offensive zone scores -1.0', () => {
+  const result = scoreZoneSequence(makeSeq([giveawayEv('offensive')]));
+  assert.equal(result.score, -1.0);
+});
+
+test('scoreZoneSequence — giveaway in defensive zone scores -1.5', () => {
+  const result = scoreZoneSequence(makeSeq([giveawayEv('defensive')]));
+  assert.equal(result.score, -1.5);
+});
+
+test('scoreZoneSequence — icing stoppage scores -0.5', () => {
+  const icingEv = { event_type: 'stoppage', stoppage_type: 'icing',
+    attribution: { id: 'A' }, statistics: [] };
+  const result = scoreZoneSequence(makeSeq([icingEv]));
+  assert.equal(result.score, -0.5);
+});
+
+test('scoreZoneSequence — second shot in sequence gets +0.3 sustained pressure bonus', () => {
+  const events = [shotSavedEv('slot'), shotSavedEv('slot')];
+  const result = scoreZoneSequence(makeSeq(events));
+  // 1.5 (first) + 1.5 + 0.3 (second + sustained bonus) = 3.3
+  assert.ok(Math.abs(result.score - 3.3) < 0.001);
+});
+
+test('scoreZoneSequence — fromTakeaway adds +1.5 bonus to total', () => {
+  const result = scoreZoneSequence(makeSeq([shotSavedEv('slot')], true));
+  // 1.5 (shot) + 1.5 (takeaway bonus) = 3.0
+  assert.equal(result.score, 3.0);
+});
