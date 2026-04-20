@@ -88,6 +88,8 @@ function parseZonePossessions(events) {
 
     // Sequence boundaries
     if (type === 'stoppage' || type === 'endperiod') {
+      // Include icing stoppages in the sequence before finalizing so scoreZoneSequence can penalize them
+      if (current && type === 'stoppage') current.events.push(ev);
       finalize(current);
       current = null;
       continue;
@@ -159,7 +161,8 @@ function scoreZoneSequence(sequence) {
         if (blockTeam) {
           defenseCredits[blockTeam.id] = (defenseCredits[blockTeam.id] || 0) + 0.5;
         }
-        // No shot count increment — blocked shot doesn't register as attempt for shooter
+        // No shot count increment — a blocked shot is a defensive play, not a sustained
+        // pressure event. A blocked shot followed by a save should not earn the +0.3 bonus.
       } else {
         const xg = shotXg(ev);
         score += xg * 0.4;
