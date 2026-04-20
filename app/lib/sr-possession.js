@@ -467,9 +467,96 @@ function computePossessionMomentum(possessions, awayAlias, homeAlias, K = 15, de
   };
 }
 
+// ── Chart generation ──────────────────────────────────────────────────────────
+
+const MAX_CHART_POINTS = 60;
+const CHART_SAMPLE_EVERY = 8; // sample every N plays — ~50 pts for a 400-play game
+
+/**
+ * Compute possession-model momentum AND generate chart arrays from the same
+ * model, so the sparkline always tells the same story as the alert values.
+ *
+ * Samples the possession model at every CHART_SAMPLE_EVERY plays. Each sample
+ * re-parses possessions from play 0 → play i, then scores them. This is O(n²)
+ * in play count but fast in practice (~8,000 light ops for a 400-play game).
+ *
+ * @param {Array}  plays      Normalized plays (from getPlaysFromSummary or normalizePbp)
+ * @param {string} awayAlias
+ * @param {string} homeAlias
+ * @param {string} awayId
+ * @param {string} homeId
+ * @param {number} K          Possession window size (default 20)
+ * @param {number} decay      Decay factor (default 0.88)
+ * @returns {{ away, home, chartAway, chartHome }}
+ */
+function computePossessionMomentumWithChart(plays, awayAlias, homeAlias, awayId, homeId, K = 20, decay = 0.88) {
+  if (!plays || plays.length === 0) {
+    return { away: 50, home: 50, chartAway: [], chartHome: [] };
+  }
+
+  const rawChartAway = [];
+  const rawChartHome = [];
+
+  for (let i = CHART_SAMPLE_EVERY; i < plays.length; i += CHART_SAMPLE_EVERY) {
+    const poss = parsePossessions(plays.slice(0, i), awayAlias, homeAlias, awayId, homeId);
+    const mom  = computePossessionMomentum(poss, awayAlias, homeAlias, K, decay);
+    const play = plays[i - 1];
+
+    rawChartAway.push({
+      t: play.wallclock || null,
+      p: play.period?.number,
+      c: play.clock?.displayValue,
+      v: mom.away,
+      hs: play.homeScore,
+      as: play.awayScore,
+    });
+    rawChartHome.push({
+      t: play.wallclock || null,
+      p: play.period?.number,
+      c: play.clock?.displayValue,
+      v: mom.home,
+    });
+  }
+
+  // Always include a final point at the last play
+  const allPoss  = parsePossessions(plays, awayAlias, homeAlias, awayId, homeId);
+  const finalMom = computePossessionMomentum(allPoss, awayAlias, homeAlias, K, decay);
+  const lastPlay = plays[plays.length - 1];
+
+  rawChartAway.push({
+    t: lastPlay.wallclock || null,
+    p: lastPlay.period?.number,
+    c: lastPlay.clock?.displayValue,
+    v: finalMom.away,
+    hs: lastPlay.homeScore,
+    as: lastPlay.awayScore,
+  });
+  rawChartHome.push({
+    t: lastPlay.wallclock || null,
+    p: lastPlay.period?.number,
+    c: lastPlay.clock?.displayValue,
+    v: finalMom.home,
+  });
+
+  // Trim to MAX_CHART_POINTS (same logic as momentum.js trimChart)
+  function trim(arr) {
+    if (arr.length <= MAX_CHART_POINTS) return arr;
+    const step = arr.length / MAX_CHART_POINTS;
+    return Array.from({ length: MAX_CHART_POINTS }, (_, i) => arr[Math.floor(i * step)]);
+  }
+
+  return {
+    away:      finalMom.away,
+    home:      finalMom.home,
+    chartAway: trim(rawChartAway),
+    chartHome: trim(rawChartHome),
+  };
+}
+
 module.exports = {
   parsePossessions,
   computePossessionMomentum,
+  computePossessionMomentumWithChart,
   SHOT_QUALITY,
   TURNOVER_COST,
   SEQ_BONUS,

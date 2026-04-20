@@ -9,7 +9,7 @@ const {
 } = require('../../../lib/espn');
 
 const { computeMomentumFromPlays } = require('../../../lib/momentum');
-const { parsePossessions, computePossessionMomentum } = require('../../../lib/sr-possession');
+const { computePossessionMomentumWithChart } = require('../../../lib/sr-possession');
 const { detectAlerts } = require('../../../lib/alerts');
 const { computeGameSwingImpact } = require('../../../lib/swing-impact');
 import { computeGameVolatility } from '../../../lib/mvix';
@@ -99,16 +99,17 @@ async function buildPollData(dateStr) {
             g.league
           );
 
-          // For NBA games, upgrade the momentum values driving alert detection
-          // to the SR possession model. Chart and recentPlays stay on ESPN data
-          // for display. action_area is absent on ESPN plays so all shots default
-          // to the 0.8 quality multiplier, but possession grouping, fast break
-          // bonuses, and turnover costs all apply — the validated improvement.
+          // For NBA games, replace momentum scores AND chart with the SR possession
+          // model so the sparkline always tells the same story as the alert values.
+          // recentPlays and scoredPlays stay on ESPN data for play-feed display.
           if (g.league === 'NBA' && g.mom) {
-            const poss  = parsePossessions(plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId);
-            const srMom = computePossessionMomentum(poss, g.awayAbbr, g.homeAbbr, 20, 0.88);
-            g.mom.away = srMom.away;
-            g.mom.home = srMom.home;
+            const srMom = computePossessionMomentumWithChart(
+              plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId
+            );
+            g.mom.away      = srMom.away;
+            g.mom.home      = srMom.home;
+            g.mom.chartAway = srMom.chartAway;
+            g.mom.chartHome = srMom.chartHome;
           }
 
           if (g.status === 'STATUS_FINAL') {
