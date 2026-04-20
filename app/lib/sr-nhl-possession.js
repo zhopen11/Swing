@@ -45,4 +45,90 @@ function getBlockingTeam(event) {
   return (event.statistics || []).find(s => s.type === 'block')?.team ?? null;
 }
 
-module.exports = { shotXg, isBlockedShot, getBlockingTeam };
+const FILTER_TYPES = new Set(['substitution', 'gamesetup', 'challenge']);
+
+function parseZonePossessions(events) {
+  const sequences = [];
+  let current = null;
+  // Track last takeaway timestamp per team (for fast-break bonus detection)
+  const lastTakeaway = {}; // teamId -> ms timestamp
+
+  function finalize(seq) {
+    if (seq && seq.events.length > 0) sequences.push(seq);
+  }
+
+  function startSeq(team, ev) {
+    const tsSec = ev.wall_clock ? new Date(ev.wall_clock).getTime() : null;
+    const teamId = team.id;
+    const fromTakeaway = tsSec != null && lastTakeaway[teamId] != null
+      ? (tsSec - lastTakeaway[teamId]) <= 8000
+      : false;
+    return {
+      team,
+      period: ev.period || null,
+      startClock: ev.clock || null,
+      endClock: null,
+      strength: ev.strength || 'even',
+      fromTakeaway,
+      events: [],
+    };
+  }
+
+  for (const ev of events) {
+    const type = ev.event_type;
+    if (FILTER_TYPES.has(type)) continue;
+
+    // Track takeaway timestamps before processing boundaries
+    if (type === 'takeaway') {
+      const teamId = ev.attribution?.id;
+      if (teamId && ev.wall_clock) {
+        lastTakeaway[teamId] = new Date(ev.wall_clock).getTime();
+      }
+    }
+
+    // Sequence boundaries
+    if (type === 'stoppage' || type === 'endperiod') {
+      finalize(current);
+      current = null;
+      continue;
+    }
+
+    if (type === 'faceoff') {
+      finalize(current);
+      current = null;
+      // OZ faceoff win starts a new sequence for the winner
+      if (ev.zone === 'offensive') {
+        const winnerStat = (ev.statistics || []).find(s => s.type === 'faceoff' && s.win);
+        if (winnerStat?.team) {
+          current = startSeq(winnerStat.team, ev);
+        }
+      }
+      continue;
+    }
+
+    const teamId = ev.attribution?.id;
+    if (!teamId || ev.zone !== 'offensive') {
+      // Defensive events during current sequence — add for blocked shot credit resolution
+      if (current && ev.zone === 'defensive' && ev.attribution?.id && ev.attribution.id !== current.team.id) {
+        current.events.push(ev);
+      }
+      continue;
+    }
+
+    // Zone flip: different team has offensive zone event
+    if (current && teamId !== current.team.id) {
+      current.endClock = ev.clock || null;
+      finalize(current);
+      current = startSeq(ev.attribution, ev);
+    } else if (!current) {
+      current = startSeq(ev.attribution, ev);
+    }
+
+    current.events.push(ev);
+  }
+
+  finalize(current);
+  return sequences;
+}
+
+module.exports = { shotXg, isBlockedShot, getBlockingTeam, parseZonePossessions };
