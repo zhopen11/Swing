@@ -182,7 +182,79 @@ function scoreZoneSequence(sequence) {
   return { score, defenseCredits };
 }
 
+const WINDOW_SIZE = 8;
+const DECAY = 0.75;
+
+function computeZoneMomentum(homeTeamId, awayTeamId, scoredSequences, windowSize = WINDOW_SIZE) {
+  if (!scoredSequences.length) return { home: 50, away: 50 };
+
+  const homeScores = [];
+  const awayScores = [];
+
+  for (const seq of scoredSequences) {
+    const isHome = seq.team.id === homeTeamId;
+    const isAway = seq.team.id === awayTeamId;
+
+    if (isHome) homeScores.push(seq.score);
+    if (isAway) awayScores.push(seq.score);
+
+    // Defense credits go to the credited team's window as a bonus entry
+    for (const [teamId, credit] of Object.entries(seq.defenseCredits || {})) {
+      if (teamId === homeTeamId) homeScores.push(credit);
+      if (teamId === awayTeamId) awayScores.push(credit);
+    }
+  }
+
+  function decayedSum(scores) {
+    const window = scores.slice(-windowSize);
+    let sum = 0;
+    const n = window.length;
+    for (let i = 0; i < n; i++) {
+      const age = n - 1 - i;
+      sum += window[i] * Math.pow(DECAY, age);
+    }
+    return Math.max(0, sum);
+  }
+
+  const homeRaw = decayedSum(homeScores);
+  const awayRaw = decayedSum(awayScores);
+  const total = homeRaw + awayRaw;
+
+  if (total === 0) return { home: 50, away: 50 };
+
+  const home = Math.round((homeRaw / total) * 100);
+  return { home, away: 100 - home };
+}
+
+function detectAlerts(homeScore, awayScore, homeGoals, awayGoals, currentStrength) {
+  const alerts = [];
+  const goalDiff = homeGoals - awayGoals;   // positive = home leads
+  const momDiff  = homeScore - awayScore;   // positive = home leads momentum
+
+  // Score Is Bluffing: score leader ≠ momentum leader by ≥10
+  if (goalDiff > 0 && momDiff <= -10)
+    alerts.push({ type: 'SIB', leader: 'away', momentumGap: -momDiff });
+  else if (goalDiff < 0 && momDiff >= 10)
+    alerts.push({ type: 'SIB', leader: 'home', momentumGap: momDiff });
+
+  // Comeback Watch: down ≥2 goals, momentum lead ≥15
+  if (goalDiff >= 2 && momDiff <= -15) {
+    const flag = currentStrength === 'shorthanded' ? 'SH' : null;
+    alerts.push({ type: 'CW', team: 'away', momentumLead: -momDiff, flag });
+  } else if (goalDiff <= -2 && momDiff >= 15) {
+    const flag = currentStrength === 'shorthanded' ? 'SH' : null;
+    alerts.push({ type: 'CW', team: 'home', momentumLead: momDiff, flag });
+  }
+
+  // Swing Warning: score gap ≤1 goal, momentum gap ≥15
+  if (Math.abs(goalDiff) <= 1 && Math.abs(momDiff) >= 15)
+    alerts.push({ type: 'SW', leader: momDiff > 0 ? 'home' : 'away', momentumGap: Math.abs(momDiff) });
+
+  return alerts;
+}
+
 module.exports = {
   shotXg, isBlockedShot, getBlockingTeam,
   parseZonePossessions, scoreZoneSequence,
+  computeZoneMomentum, detectAlerts,
 };

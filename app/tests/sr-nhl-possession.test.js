@@ -269,3 +269,101 @@ test('scoreZoneSequence — fromTakeaway adds +1.5 bonus to total', () => {
   // 1.5 (shot) + 1.5 (takeaway bonus) = 3.0
   assert.equal(result.score, 3.0);
 });
+
+// ── computeZoneMomentum tests ──────────────────────────────────────────────
+const { computeZoneMomentum, detectAlerts } = require('../lib/sr-nhl-possession');
+
+function scoredSeq(teamId, score) {
+  return { team: { id: teamId }, score, defenseCredits: {} };
+}
+
+test('computeZoneMomentum — equal recent sequences returns ~50/50', () => {
+  const scored = [
+    scoredSeq('home', 2.0), scoredSeq('away', 2.0),
+    scoredSeq('home', 2.0), scoredSeq('away', 2.0),
+  ];
+  const result = computeZoneMomentum('home', 'away', scored);
+  assert.ok(Math.abs(result.home - 50) <= 5);
+  assert.ok(Math.abs(result.away - 50) <= 5);
+});
+
+test('computeZoneMomentum — home dominance pushes home above 60', () => {
+  const scored = [];
+  for (let i = 0; i < 8; i++) scored.push(scoredSeq('home', 3.0));
+  for (let i = 0; i < 2; i++) scored.push(scoredSeq('away', 0.5));
+  const result = computeZoneMomentum('home', 'away', scored);
+  assert.ok(result.home > 60, `expected home > 60, got ${result.home}`);
+});
+
+test('computeZoneMomentum — scores sum to 100', () => {
+  const scored = [
+    scoredSeq('home', 1.5), scoredSeq('away', 3.0),
+    scoredSeq('home', 2.0), scoredSeq('away', 1.0),
+  ];
+  const result = computeZoneMomentum('home', 'away', scored);
+  assert.equal(result.home + result.away, 100);
+});
+
+test('computeZoneMomentum — empty sequences returns 50/50', () => {
+  const result = computeZoneMomentum('home', 'away', []);
+  assert.equal(result.home, 50);
+  assert.equal(result.away, 50);
+});
+
+test('computeZoneMomentum — incorporates defense credits into opposing team window', () => {
+  // Away team earns a block credit against home team sequence
+  const scored = [
+    { team: { id: 'home' }, score: 0, defenseCredits: { away: 0.5 } },
+  ];
+  const result = computeZoneMomentum('home', 'away', scored);
+  // Away has credit, home has 0 — away should be above 50
+  assert.ok(result.away > 50);
+});
+
+// Alert tests
+test('detectAlerts — Score Is Bluffing fires when score leader trails momentum by ≥10', () => {
+  // Home leads score 2-1 but away leads momentum 65-35
+  const alerts = detectAlerts(35, 65, 2, 1, 'even');
+  assert.ok(alerts.some(a => a.type === 'SIB'));
+});
+
+test('detectAlerts — no SIB when momentum gap < 10', () => {
+  const alerts = detectAlerts(46, 54, 2, 1, 'even');
+  assert.equal(alerts.filter(a => a.type === 'SIB').length, 0);
+});
+
+test('detectAlerts — Comeback Watch fires when down ≥2 goals and momentum lead ≥15', () => {
+  // Away down 3-1 (2 goals) but leads momentum 60-40
+  const alerts = detectAlerts(40, 60, 3, 1, 'even');
+  assert.ok(alerts.some(a => a.type === 'CW'));
+});
+
+test('detectAlerts — Comeback Watch does NOT fire when down only 1 goal', () => {
+  const alerts = detectAlerts(40, 60, 2, 1, 'even');
+  assert.equal(alerts.filter(a => a.type === 'CW').length, 0);
+});
+
+test('detectAlerts — Comeback Watch does NOT fire when momentum gap < 15', () => {
+  // Away down 2 goals but momentum gap only 10
+  const alerts = detectAlerts(45, 55, 3, 1, 'even');
+  assert.equal(alerts.filter(a => a.type === 'CW').length, 0);
+});
+
+test('detectAlerts — Swing Warning fires when score gap ≤1 and momentum gap ≥15', () => {
+  // Tied game but home dominates momentum 70-30
+  const alerts = detectAlerts(70, 30, 1, 1, 'even');
+  assert.ok(alerts.some(a => a.type === 'SW'));
+});
+
+test('detectAlerts — Swing Warning fires with 1-goal difference', () => {
+  const alerts = detectAlerts(70, 30, 2, 1, 'even');
+  assert.ok(alerts.some(a => a.type === 'SW'));
+});
+
+test('detectAlerts — Comeback Watch gets SH flag when leading team is shorthanded', () => {
+  // Away down 2 goals, leads momentum, AND the home team (score leader) is shorthanded
+  const alerts = detectAlerts(40, 60, 3, 1, 'shorthanded');
+  const cw = alerts.find(a => a.type === 'CW');
+  assert.ok(cw);
+  assert.equal(cw.flag, 'SH');
+});
