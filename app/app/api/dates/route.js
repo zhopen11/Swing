@@ -8,6 +8,13 @@ let cachedDates = null;
 let cacheTimestamp = 0;
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
+/** Returns "YYYY-MM-DD" for N days ago in Eastern Time */
+function etDateOffset(daysAgo) {
+  const et = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/New_York' }));
+  et.setDate(et.getDate() - daysAgo);
+  return `${et.getFullYear()}-${String(et.getMonth() + 1).padStart(2, '0')}-${String(et.getDate()).padStart(2, '0')}`;
+}
+
 export async function GET() {
   try {
     const now = Date.now();
@@ -22,7 +29,14 @@ export async function GET() {
     `;
 
     // Return as array of "YYYY-MM-DD" strings
-    const dates = result.rows.map((r) => r.game_date.toISOString().slice(0, 10));
+    const dbDates = result.rows.map((r) => r.game_date.toISOString().slice(0, 10));
+
+    // Always include the last 3 days so yesterday/today are selectable even if
+    // MVIX recording didn't run (e.g. server was down, games not yet finalized).
+    const recentDates = [etDateOffset(2), etDateOffset(1), etDateOffset(0)];
+    const dateSet = new Set([...dbDates, ...recentDates]);
+    const dates = [...dateSet].sort().reverse();
+
     cachedDates = { dates };
     cacheTimestamp = now;
 

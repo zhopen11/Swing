@@ -5,15 +5,19 @@
   "scripts": {
     "dev": "next dev --port 4000",
     "build": "next build",
+    "vercel-build": "next build",
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
     "backfill": "node scripts/backfill.js",
-    "analysis": "node scripts/analysis.js"
+    "analysis": "node scripts/analysis.js",
+    "sr-compare": "node scripts/sportradar-compare.js",
+    "live-compare": "node scripts/live-compare.js"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
     "better-sqlite3": "^12.6.2",
+    "git": "^0.1.5",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
     "pg": "^8.20.0",
