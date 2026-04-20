@@ -2,6 +2,14 @@
 
 const { NBA_SCOREBOARD, CBB_SCOREBOARD, NBA_SUMMARY, CBB_SUMMARY } = require('./config');
 
+// Convert a UTC ISO timestamp to YYYY-MM-DD in Eastern Time.
+// Prevents late games (e.g. 2026-04-20T01:00Z = 9pm ET April 19) from being
+// stored under the wrong date in team_mvix and the date picker.
+function toEasternDate(isoStr) {
+  if (!isoStr) return '';
+  return new Date(isoStr).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+}
+
 async function fetchJSON(url, retries = 1) {
   const sep = url.includes('?') ? '&' : '?';
   const fullUrl = `${url}${sep}_t=${Date.now()}`;
@@ -153,7 +161,7 @@ function parseScoreboardEvent(event, league) {
   return {
     id: event.id || '',
     league,
-    gameDate: (event.date || '').slice(0, 10),
+    gameDate: toEasternDate(event.date),
     name: event.name || '',
     shortName: event.shortName || '',
     status,

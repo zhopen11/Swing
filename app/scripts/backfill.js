@@ -18,7 +18,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Season date ranges (2025-26)
 const SEASONS = {
-  NBA: { start: '2025-10-22', end: '2026-04-13' },
+  NBA: { start: '2025-10-22', end: '2026-06-22' }, // extended through 2026 playoffs
   CBB: { start: '2025-11-03', end: '2026-04-08' },
 };
 
