@@ -1,4 +1,17 @@
-// app/lib/sr-nhl-possession.js
+/**
+ * The Swing — SR NHL Possession Model
+ *
+ * Zone-possession-efficiency momentum model for NHL hockey. Produces
+ * 0–100 momentum scores per team and three alert types (SIB, CW, SW)
+ * validated against a raw shot count baseline.
+ *
+ * Architecture: SR NHL PBP events are grouped into zone possession
+ * sequences via the top-level `zone` field. Each sequence is scored
+ * using xG-weighted shot quality + giveaway/icing penalties. A sliding
+ * window of 8 sequences per team with exponential decay normalizes to
+ * 0–100. Blocked shots are identified via statistics[].type === 'block'
+ * within `shotmissed` events and credited to the defending team.
+ */
 
 const XG_BY_AREA = {
   slot:           1.5,
