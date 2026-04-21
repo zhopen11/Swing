@@ -6,7 +6,7 @@ const fs   = require('fs');
 const path = require('path');
 const {
   parseZonePossessions, scoreZoneSequence,
-  computeZoneMomentum, detectAlerts,
+  computeZoneMomentum, detectAlerts, shotXg,
 } = require('../lib/sr-nhl-possession');
 
 const CACHE_DIR = path.join(__dirname, '../../data/sr-nhl-cache');
@@ -39,7 +39,22 @@ function flattenEvents(pbp) {
   );
 }
 
-// ── Find comeback scenarios in a game ─────────────────────────────────────────
+// ── Cumulative xG for a team across a slice of events ────────────────────────
+function cumulativeXg(events, teamId) {
+  const SHOT_TYPES = new Set(['goal', 'shotsaved', 'shotmissed']);
+  let xg = 0;
+  for (const ev of events) {
+    if (!SHOT_TYPES.has(ev.event_type)) continue;
+    if (ev.attribution?.id !== teamId) continue;
+    xg += shotXg(ev);
+  }
+  return xg;
+}
+
+// ── Find comeback scenarios: trailing ≥1 goal, xG surge in next 50 events ────
+// Ground truth is shot quality dominance, not goal closure — goals are too rare
+// in hockey to be a reliable validation signal. A trailing team generating more
+// cumulative xG than the leading team IS the comeback beginning.
 function findComebacks(events, homeId, awayId) {
   const FILTER = new Set(['substitution', 'gamesetup', 'challenge']);
   const filtered = events.filter(e => !FILTER.has(e.event_type));
@@ -53,27 +68,19 @@ function findComebacks(events, homeId, awayId) {
     // Must be period 2 or 3 (2nd half equivalent)
     if ((ev.period || 1) < 2) continue;
 
-    // Trailing team down ≥2 goals
-    if (Math.abs(diff) < 2) continue;
+    // Trailing team down ≥1 goal
+    if (Math.abs(diff) < 1) continue;
 
     const trailingTeam = diff > 0 ? awayId : homeId;
-    const trailingGoals = diff > 0 ? score.away : score.home;
-    const leadingGoals  = diff > 0 ? score.home : score.away;
+    const leadingTeam  = diff > 0 ? homeId : awayId;
 
-    // Look ahead 60 events for ≥1 goal closure
-    const lookahead = filtered.slice(i + 1, i + 61);
-    let closed = false;
-    for (const fev of lookahead) {
-      const fs = getScore(fev);
-      const newTrailing = trailingTeam === homeId ? fs.home : fs.away;
-      const newLeading  = trailingTeam === homeId ? fs.away : fs.home;
-      if (newLeading - newTrailing < leadingGoals - trailingGoals) {
-        closed = true;
-        break;
-      }
-    }
+    // Confirmed: trailing team generates more cumulative xG than leading team
+    // across the next 50 events — shot quality surge precedes actual goals
+    const lookahead = filtered.slice(i + 1, i + 51);
+    const trailingXg = cumulativeXg(lookahead, trailingTeam);
+    const leadingXg  = cumulativeXg(lookahead, leadingTeam);
 
-    if (closed) {
+    if (trailingXg > leadingXg) {
       comebacks.push({ eventIdx: i, trailingTeam, scoreDiff: Math.abs(diff), event: ev });
       i += 30; // skip forward to avoid overlapping scenarios
     }
@@ -148,14 +155,12 @@ function computeAlertPrecision(events, homeId, awayId, useBaseline) {
     if (!alerts.some(a => a.type === 'CW' || a.type === 'SIB')) continue;
 
     fired++;
-    // Confirmed if score gap narrows ≥1 goal within next 50 events
-    const leadingGoals  = Math.max(score.home, score.away);
-    const trailingGoals = Math.min(score.home, score.away);
+    // Confirmed if trailing team generates more xG than leading team in next 50 events
+    const trailingTeamId = score.home > score.away ? awayId : homeId;
+    const leadingTeamId  = score.home > score.away ? homeId : awayId;
     const lookahead = filtered.slice(i + 1, i + 51);
-    for (const fev of lookahead) {
-      const fs = getScore(fev);
-      const newLead = Math.max(fs.home, fs.away) - Math.min(fs.home, fs.away);
-      if (newLead < leadingGoals - trailingGoals) { confirmed++; break; }
+    if (cumulativeXg(lookahead, trailingTeamId) > cumulativeXg(lookahead, leadingTeamId)) {
+      confirmed++;
     }
 
     i += 10; // skip forward to avoid counting the same alert run repeatedly
@@ -247,7 +252,7 @@ function main() {
   console.log('AGGREGATE RESULTS');
   console.log('─────────────────────────────────────────');
   console.log(`Games analyzed:              ${gameResults.length}`);
-  console.log(`Total comeback scenarios:    ${totComebacks}`);
+  console.log(`Total comeback scenarios:    ${totComebacks}  (≥1 goal down, trailing xG surge in next 50 events)`);
   console.log(`Possession catch rate:       ${totComebacks ? Math.round((totPoss/totComebacks)*100) : '-'}% (${totPoss}/${totComebacks})`);
   console.log(`Baseline catch rate:         ${totComebacks ? Math.round((totBase/totComebacks)*100) : '-'}% (${totBase}/${totComebacks})`);
   console.log(`Timing — poss fires first:   ${totPossFirst}`);
