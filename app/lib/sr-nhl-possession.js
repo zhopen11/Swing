@@ -226,7 +226,7 @@ function computeZoneMomentum(homeTeamId, awayTeamId, scoredSequences, windowSize
   return { home, away: 100 - home };
 }
 
-function detectAlerts(homeScore, awayScore, homeGoals, awayGoals, currentStrength) {
+function detectAlerts(homeScore, awayScore, homeGoals, awayGoals, homeStrength, awayStrength) {
   const alerts = [];
   const goalDiff = homeGoals - awayGoals;   // positive = home leads
   const momDiff  = homeScore - awayScore;   // positive = home leads momentum
@@ -239,10 +239,10 @@ function detectAlerts(homeScore, awayScore, homeGoals, awayGoals, currentStrengt
 
   // Comeback Watch: down ≥2 goals, momentum lead ≥15
   if (goalDiff >= 2 && momDiff <= -15) {
-    const flag = currentStrength === 'shorthanded' ? 'SH' : null;
+    const flag = homeStrength === 'shorthanded' ? 'SH' : null;
     alerts.push({ type: 'CW', team: 'away', momentumLead: -momDiff, flag });
   } else if (goalDiff <= -2 && momDiff >= 15) {
-    const flag = currentStrength === 'shorthanded' ? 'SH' : null;
+    const flag = awayStrength === 'shorthanded' ? 'SH' : null;
     alerts.push({ type: 'CW', team: 'home', momentumLead: momDiff, flag });
   }
 

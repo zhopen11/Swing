@@ -323,47 +323,55 @@ test('computeZoneMomentum — incorporates defense credits into opposing team wi
 // Alert tests
 test('detectAlerts — Score Is Bluffing fires when score leader trails momentum by ≥10', () => {
   // Home leads score 2-1 but away leads momentum 65-35
-  const alerts = detectAlerts(35, 65, 2, 1, 'even');
+  const alerts = detectAlerts(35, 65, 2, 1, 'even', 'even');
   assert.ok(alerts.some(a => a.type === 'SIB'));
 });
 
 test('detectAlerts — no SIB when momentum gap < 10', () => {
-  const alerts = detectAlerts(46, 54, 2, 1, 'even');
+  const alerts = detectAlerts(46, 54, 2, 1, 'even', 'even');
   assert.equal(alerts.filter(a => a.type === 'SIB').length, 0);
 });
 
 test('detectAlerts — Comeback Watch fires when down ≥2 goals and momentum lead ≥15', () => {
   // Away down 3-1 (2 goals) but leads momentum 60-40
-  const alerts = detectAlerts(40, 60, 3, 1, 'even');
+  const alerts = detectAlerts(40, 60, 3, 1, 'even', 'even');
   assert.ok(alerts.some(a => a.type === 'CW'));
 });
 
 test('detectAlerts — Comeback Watch does NOT fire when down only 1 goal', () => {
-  const alerts = detectAlerts(40, 60, 2, 1, 'even');
+  const alerts = detectAlerts(40, 60, 2, 1, 'even', 'even');
   assert.equal(alerts.filter(a => a.type === 'CW').length, 0);
 });
 
 test('detectAlerts — Comeback Watch does NOT fire when momentum gap < 15', () => {
   // Away down 2 goals but momentum gap only 10
-  const alerts = detectAlerts(45, 55, 3, 1, 'even');
+  const alerts = detectAlerts(45, 55, 3, 1, 'even', 'even');
   assert.equal(alerts.filter(a => a.type === 'CW').length, 0);
 });
 
 test('detectAlerts — Swing Warning fires when score gap ≤1 and momentum gap ≥15', () => {
   // Tied game but home dominates momentum 70-30
-  const alerts = detectAlerts(70, 30, 1, 1, 'even');
+  const alerts = detectAlerts(70, 30, 1, 1, 'even', 'even');
   assert.ok(alerts.some(a => a.type === 'SW'));
 });
 
 test('detectAlerts — Swing Warning fires with 1-goal difference', () => {
-  const alerts = detectAlerts(70, 30, 2, 1, 'even');
+  const alerts = detectAlerts(70, 30, 2, 1, 'even', 'even');
   assert.ok(alerts.some(a => a.type === 'SW'));
 });
 
 test('detectAlerts — Comeback Watch gets SH flag when leading team is shorthanded', () => {
   // Away down 2 goals, leads momentum, AND the home team (score leader) is shorthanded
-  const alerts = detectAlerts(40, 60, 3, 1, 'shorthanded');
+  const alerts = detectAlerts(40, 60, 3, 1, 'shorthanded', 'even');
   const cw = alerts.find(a => a.type === 'CW');
   assert.ok(cw);
   assert.equal(cw.flag, 'SH');
+});
+
+test('detectAlerts — Comeback Watch fires for home team when away leads by ≥2 goals', () => {
+  // Home down 3-1 (2 goals deficit) but home leads momentum 60-40
+  const alerts = detectAlerts(60, 40, 1, 3, 'even', 'even');
+  const cw = alerts.find(a => a.type === 'CW');
+  assert.ok(cw);
+  assert.equal(cw.team, 'home');
 });
