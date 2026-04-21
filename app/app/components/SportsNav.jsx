@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useRef } from 'react';
+const SPORTS = [
+  { label: 'Basketball', key: 'basketball' },
+  { label: 'Baseball',   key: 'baseball' },
+  { label: 'Football',   key: 'football' },
+  { label: 'Soccer',     key: 'soccer' },
+  { label: 'Hockey',     key: 'hockey' },
+  { label: 'More Sports', key: 'more' },
+];
 
-const SPORTS = ['Basketball', 'Baseball', 'Football', 'Soccer', 'Hockey', 'More Sports'];
+const ENABLED = new Set(['basketball', 'hockey']);
 
-export default function SportsNav() {
-  const [tooltip, setTooltip] = useState(null);
-  const timerRef = useRef(null);
-
-  const handleClick = (sport, i) => {
-    if (i === 0) return;
-    setTooltip(sport);
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => setTooltip(null), 4000);
+export default function SportsNav({ activeSport = 'basketball', onSportChange }) {
+  const handleClick = (key) => {
+    if (!ENABLED.has(key)) return;
+    onSportChange?.(key);
   };
 
   return (
@@ -26,63 +28,34 @@ export default function SportsNav() {
       borderBottom: '1px solid #0a2a6e',
       padding: '0 24px',
     }}>
-      {SPORTS.map((sport, i) => (
-        <div key={sport} style={{ position: 'relative' }}>
+      {SPORTS.map(({ label, key }) => {
+        const isActive  = key === activeSport;
+        const isEnabled = ENABLED.has(key);
+        return (
           <button
-            onClick={() => handleClick(sport, i)}
+            key={key}
+            onClick={() => handleClick(key)}
             style={{
-              background: i === 0 ? '#1493ff' : 'transparent',
-              color: '#fff',
-              border: 'none',
-              padding: '10px 18px',
-              fontSize: '14px',
-              fontWeight: i === 0 ? 700 : 500,
-              cursor: i === 0 ? 'default' : 'pointer',
-              whiteSpace: 'nowrap',
-              fontFamily: "'DM Sans', sans-serif",
-              borderBottom: i === 0 ? '2px solid #fff' : '2px solid transparent',
-              opacity: i === 0 ? 1 : 0.7,
-              transition: 'opacity 0.15s',
+              background:   isActive ? '#1493ff' : 'transparent',
+              color:        '#fff',
+              border:       'none',
+              padding:      '10px 18px',
+              fontSize:     '14px',
+              fontWeight:   isActive ? 700 : 500,
+              cursor:       isEnabled ? 'pointer' : 'default',
+              whiteSpace:   'nowrap',
+              fontFamily:   "'DM Sans', sans-serif",
+              borderBottom: isActive ? '2px solid #fff' : '2px solid transparent',
+              opacity:      isActive ? 1 : isEnabled ? 0.85 : 0.5,
+              transition:   'opacity 0.15s',
             }}
-            onMouseEnter={(e) => { if (i !== 0) e.target.style.opacity = 1; }}
-            onMouseLeave={(e) => { if (i !== 0) e.target.style.opacity = 0.7; }}
+            onMouseEnter={(e) => { if (isEnabled && !isActive) e.target.style.opacity = 1; }}
+            onMouseLeave={(e) => { if (isEnabled && !isActive) e.target.style.opacity = 0.85; }}
           >
-            {sport}
+            {label}
           </button>
-          {tooltip === sport && (
-            <div style={{
-              position: 'absolute',
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              background: '#1493ff',
-              color: '#fff',
-              padding: '6px 14px',
-              borderRadius: '6px',
-              fontSize: '13px',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              zIndex: 9999,
-              marginTop: '4px',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-              fontFamily: "'DM Sans', sans-serif",
-            }}>
-              Coming Soon
-              <div style={{
-                position: 'absolute',
-                top: '-5px',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: 0,
-                height: 0,
-                borderLeft: '6px solid transparent',
-                borderRight: '6px solid transparent',
-                borderBottom: '6px solid #1493ff',
-              }} />
-            </div>
-          )}
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
