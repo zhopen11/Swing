@@ -94,8 +94,6 @@ function modelCatchesComebacks(events, comebacks, homeId, awayId, useBaseline) {
     for (let i = scanStart; i <= scanEnd; i++) {
       const slice = filtered.slice(0, i + 1);
       const score = getScore(filtered[i]);
-      const goalDiff = score.home - score.away;
-
       let mom;
       if (useBaseline) {
         mom = baselineMomentum(slice, homeId, awayId);
@@ -105,8 +103,8 @@ function modelCatchesComebacks(events, comebacks, homeId, awayId, useBaseline) {
         mom = computeZoneMomentum(homeId, awayId, scored);
       }
 
-      const homeStrength = filtered[i].strength || 'even';
-      const awayStrength = filtered[i].strength || 'even';
+      const homeStrength = 'even';
+      const awayStrength = 'even';
       const alerts = detectAlerts(mom.home, mom.away, score.home, score.away, homeStrength, awayStrength);
       if (alerts.some(a => a.type === 'CW')) {
         caughtAt = i;
@@ -118,6 +116,46 @@ function modelCatchesComebacks(events, comebacks, homeId, awayId, useBaseline) {
   }
 
   return results;
+}
+
+// ── Alert precision: of CW/SIB alerts fired, what % confirm within 50 events ──
+function computeAlertPrecision(events, homeId, awayId, useBaseline) {
+  const FILTER = new Set(['substitution', 'gamesetup', 'challenge']);
+  const filtered = events.filter(e => !FILTER.has(e.event_type));
+  let fired = 0, confirmed = 0;
+
+  for (let i = 0; i < filtered.length; i++) {
+    const score = getScore(filtered[i]);
+    const diff = Math.abs(score.home - score.away);
+    if (diff < 2) continue; // need ≥2 goal gap for CW
+
+    let mom;
+    if (useBaseline) {
+      mom = baselineMomentum(filtered.slice(0, i + 1), homeId, awayId);
+    } else {
+      const seqs = parseZonePossessions(filtered.slice(0, i + 1));
+      const scored = seqs.map(s => ({ ...s, ...scoreZoneSequence(s) }));
+      mom = computeZoneMomentum(homeId, awayId, scored);
+    }
+
+    const alerts = detectAlerts(mom.home, mom.away, score.home, score.away, 'even', 'even');
+    if (!alerts.some(a => a.type === 'CW' || a.type === 'SIB')) continue;
+
+    fired++;
+    // Confirmed if score gap narrows ≥1 goal within next 50 events
+    const leadingGoals  = Math.max(score.home, score.away);
+    const trailingGoals = Math.min(score.home, score.away);
+    const lookahead = filtered.slice(i + 1, i + 51);
+    for (const fev of lookahead) {
+      const fs = getScore(fev);
+      const newLead = Math.max(fs.home, fs.away) - Math.min(fs.home, fs.away);
+      if (newLead < leadingGoals - trailingGoals) { confirmed++; break; }
+    }
+
+    i += 10; // skip forward to avoid counting the same alert run repeatedly
+  }
+
+  return { fired, confirmed };
 }
 
 // ── Per-game analysis ─────────────────────────────────────────────────────────
@@ -132,6 +170,8 @@ function analyzeGame(pbp) {
 
   const possResults = modelCatchesComebacks(events, comebacks, homeId, awayId, false);
   const baseResults = modelCatchesComebacks(events, comebacks, homeId, awayId, true);
+  const possPrecision = computeAlertPrecision(events, homeId, awayId, false);
+  const basePrecision = computeAlertPrecision(events, homeId, awayId, true);
 
   let possFirst = 0, baseFirst = 0, same = 0;
   for (let i = 0; i < comebacks.length; i++) {
@@ -151,6 +191,7 @@ function analyzeGame(pbp) {
     baseCaught: baseResults.filter(r => r.caught).length,
     possFirst, baseFirst, same,
     possResults, baseResults,
+    possPrecision, basePrecision,
   };
 }
 
@@ -182,6 +223,9 @@ function main() {
       console.log(`${result.game}`);
       console.log(`  Comebacks: ${result.comebacks} | Poss: ${result.possCaught} (${possRate}%) | Base: ${result.baseCaught} (${baseRate}%)`);
       console.log(`  Timing (shared): poss first ${result.possFirst}, base first ${result.baseFirst}, same ${result.same}`);
+      const possPrec = result.possPrecision.fired ? Math.round((result.possPrecision.confirmed / result.possPrecision.fired) * 100) : '-';
+      const basePrec = result.basePrecision.fired ? Math.round((result.basePrecision.confirmed / result.basePrecision.fired) * 100) : '-';
+      console.log(`  Precision: poss ${result.possPrecision.confirmed}/${result.possPrecision.fired} (${possPrec}%), base ${result.basePrecision.confirmed}/${result.basePrecision.fired} (${basePrec}%)`);
     } catch (err) {
       console.error(`  ERROR ${file}: ${err.message}`);
     }
@@ -202,6 +246,13 @@ function main() {
   console.log(`Baseline catch rate:         ${totComebacks ? Math.round((totBase/totComebacks)*100) : '-'}% (${totBase}/${totComebacks})`);
   console.log(`Timing — poss fires first:   ${totPossFirst}`);
   console.log(`Timing — base fires first:   ${totBaseFirst}`);
+
+  const totPossFired = gameResults.reduce((s, r) => s + r.possPrecision.fired, 0);
+  const totPossConf  = gameResults.reduce((s, r) => s + r.possPrecision.confirmed, 0);
+  const totBaseFired = gameResults.reduce((s, r) => s + r.basePrecision.fired, 0);
+  const totBaseConf  = gameResults.reduce((s, r) => s + r.basePrecision.confirmed, 0);
+  console.log(`Possession precision:        ${totPossFired ? Math.round((totPossConf/totPossFired)*100) : '-'}% (${totPossConf}/${totPossFired})`);
+  console.log(`Baseline precision:          ${totBaseFired ? Math.round((totBaseConf/totBaseFired)*100) : '-'}% (${totBaseConf}/${totBaseFired})`);
 }
 
 main();
