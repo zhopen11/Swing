@@ -222,12 +222,13 @@ export default function Dashboard() {
   function timeRemaining(g) {
     if (g.status === 'STATUS_FINAL') return -1;
     if (g.status === 'STATUS_HALFTIME') {
-      // NBA halftime = 2 quarters left, CBB halftime = 1 half left
-      const totalPeriods = g.league === 'NBA' ? 4 : 2;
+      // NBA: 2 quarters left; CBB: 1 half left; NHL intermission: 1+ period left
+      const totalPeriods = g.league === 'NBA' ? 4 : g.league === 'NHL' ? 3 : 2;
       const periodsLeft = totalPeriods - g.period;
-      return periodsLeft * 12 * 60; // ~minutes per period in seconds
+      const mins = g.league === 'NBA' ? 12 : 20;
+      return periodsLeft * mins * 60;
     }
-    const totalPeriods = g.league === 'NBA' ? 4 : 2;
+    const totalPeriods = g.league === 'NBA' ? 4 : g.league === 'NHL' ? 3 : 2;
     const periodMins = g.league === 'NBA' ? 12 : 20;
     const periodsLeft = Math.max(0, totalPeriods - g.period);
     // Parse clock "7:13" to seconds
@@ -243,7 +244,8 @@ export default function Dashboard() {
   function sortByLeagueAndTime(arr) {
     const cbb = arr.filter((g) => g.league === 'CBB').sort((a, b) => timeRemaining(a) - timeRemaining(b));
     const nba = arr.filter((g) => g.league === 'NBA').sort((a, b) => timeRemaining(a) - timeRemaining(b));
-    return [...cbb, ...nba];
+    const other = arr.filter((g) => g.league !== 'CBB' && g.league !== 'NBA').sort((a, b) => timeRemaining(a) - timeRemaining(b));
+    return [...cbb, ...nba, ...other];
   }
 
   const live = sortByLeagueAndTime(filtered.filter(isLiveOrLingering));
