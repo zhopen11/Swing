@@ -34,7 +34,9 @@ function getScore(ev) {
 
 // ── Flatten all events from PBP ───────────────────────────────────────────────
 function flattenEvents(pbp) {
-  return (pbp.periods || []).flatMap(p => p.events || []);
+  return (pbp.periods || []).flatMap(p =>
+    (p.events || []).map(e => ({ ...e, period: e.period ?? p.number ?? p.sequence }))
+  );
 }
 
 // ── Find comeback scenarios in a game ─────────────────────────────────────────
@@ -103,8 +105,11 @@ function modelCatchesComebacks(events, comebacks, homeId, awayId, useBaseline) {
         mom = computeZoneMomentum(homeId, awayId, scored);
       }
 
-      const homeStrength = 'even';
-      const awayStrength = 'even';
+      // Use the current event's strength field as the best available approximation
+      // (SR attributes strength relative to the event's team; 'even' is the fallback)
+      const evStrength = filtered[i].strength || 'even';
+      const homeStrength = evStrength;
+      const awayStrength = evStrength;
       const alerts = detectAlerts(mom.home, mom.away, score.home, score.away, homeStrength, awayStrength);
       if (alerts.some(a => a.type === 'CW')) {
         caughtAt = i;
@@ -138,7 +143,8 @@ function computeAlertPrecision(events, homeId, awayId, useBaseline) {
       mom = computeZoneMomentum(homeId, awayId, scored);
     }
 
-    const alerts = detectAlerts(mom.home, mom.away, score.home, score.away, 'even', 'even');
+    const evStrength = filtered[i].strength || 'even';
+    const alerts = detectAlerts(mom.home, mom.away, score.home, score.away, evStrength, evStrength);
     if (!alerts.some(a => a.type === 'CW' || a.type === 'SIB')) continue;
 
     fired++;
