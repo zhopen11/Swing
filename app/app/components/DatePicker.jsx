@@ -15,9 +15,7 @@ function toApiDate(iso) {
 
 /** Get today's date in "YYYY-MM-DD" (Eastern Time) */
 function todayET() {
-  return new Date(
-    new Date().toLocaleString('en-US', { timeZone: 'America/New_York' })
-  ).toISOString().slice(0, 10);
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
 }
 
 /** Format "YYYY-MM-DD" into "Tue, Mar 10" */
