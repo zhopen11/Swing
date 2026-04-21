@@ -14,6 +14,7 @@ const REFRESH_MS = 10000;
 const FINAL_LINGER_MS = 5 * 60 * 1000; // 5 minutes
 
 export default function Dashboard() {
+  const [activeSport, setActiveSport] = useState('basketball');
   const [games, setGames] = useState([]);
   const [filter, setFilter] = useState('LIVE');
   const [loading, setLoading] = useState(true);
@@ -66,9 +67,17 @@ export default function Dashboard() {
     }
   }, []);
 
+  const handleSportChange = useCallback((sport) => {
+    setActiveSport(sport);
+    setGames([]);
+    setLoading(true);
+    setFilter('LIVE');
+  }, []);
+
   const fetchData = useCallback(async () => {
     try {
-      let url = '/api/poll?_t=' + Date.now();
+      const base = activeSport === 'hockey' ? '/api/hockey/poll' : '/api/poll';
+      let url = base + '?_t=' + Date.now();
       if (selectedDate) {
         url += '&date=' + toApiDate(selectedDate);
       }
@@ -83,7 +92,7 @@ export default function Dashboard() {
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, activeSport]);
 
   // Fetch available dates on mount
   useEffect(() => {
@@ -120,7 +129,7 @@ export default function Dashboard() {
       clearInterval(timerRef.current);
       clearInterval(clockRef.current);
     };
-  }, [fetchData, selectedDate]);
+  }, [fetchData, selectedDate, activeSport]);
 
   const handleSignOut = async () => {
     try {
@@ -410,7 +419,7 @@ export default function Dashboard() {
       </header>}
 
       {/* Sports nav */}
-      {!isFullscreen && <SportsNav />}
+      {!isFullscreen && <SportsNav activeSport={activeSport} onSportChange={handleSportChange} />}
 
       {/* Date picker + Filter tabs */}
       {!isFullscreen && (

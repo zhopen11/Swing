@@ -253,8 +253,78 @@ function detectAlerts(homeScore, awayScore, homeGoals, awayGoals, homeStrength, 
   return alerts;
 }
 
+// ── High-Danger Shot Rate momentum (validated primary model) ─────────────────
+
+const HD_AREAS    = new Set(['slot', 'crease', 'downlow']);
+const SHOT_EVTS   = new Set(['goal', 'shotsaved', 'shotmissed']);
+const HD_FILTER   = new Set(['substitution', 'gamesetup', 'challenge']);
+const HD_WIN_MS   = 3 * 60 * 1000; // 3-minute rolling window
+const HD_SAMPLE   = 30;            // chart sample every N filtered events
+const MAX_CHART   = 60;
+
+/**
+ * Compute HDSR momentum from an event slice.
+ * Weights slot/crease/downlow shots 10x over perimeter attempts.
+ * Uses a 3-minute wall_clock rolling window.
+ */
+function hdsrMomentum(events, homeTeamId, awayTeamId) {
+  const last = events[events.length - 1];
+  const curTime = last?.wall_clock ? new Date(last.wall_clock).getTime() : null;
+  let home = 0, away = 0;
+
+  for (let i = events.length - 1; i >= 0; i--) {
+    const ev = events[i];
+    if (!SHOT_EVTS.has(ev.event_type)) continue;
+    if (curTime && ev.wall_clock) {
+      if (curTime - new Date(ev.wall_clock).getTime() > HD_WIN_MS) break;
+    }
+    const area   = (ev.location?.action_area || '').toLowerCase();
+    const weight = HD_AREAS.has(area) ? 1.0 : 0.1;
+    const id     = ev.attribution?.id;
+    if (id === homeTeamId) home += weight;
+    else if (id === awayTeamId) away += weight;
+  }
+
+  const total = home + away;
+  if (total < 0.2) return { home: 50, away: 50 };
+  return { home: Math.round((home / total) * 100), away: Math.round((away / total) * 100) };
+}
+
+/**
+ * Compute HDSR momentum + chart arrays for a full game.
+ * Returns { home, away, chartHome, chartAway } matching the basketball chart shape.
+ */
+function hdsrMomentumWithChart(events, homeTeamId, awayTeamId) {
+  const filtered = events.filter(e => !HD_FILTER.has(e.event_type));
+  const chartHome = [];
+  const chartAway = [];
+
+  for (let i = HD_SAMPLE; i < filtered.length; i += HD_SAMPLE) {
+    const mom = hdsrMomentum(filtered.slice(0, i + 1), homeTeamId, awayTeamId);
+    const ev  = filtered[i];
+    chartHome.push({ v: mom.home, p: ev.period, c: ev.clock, t: ev.wall_clock, hs: ev.home_points, as: ev.away_points });
+    chartAway.push({ v: mom.away, p: ev.period, c: ev.clock, t: ev.wall_clock });
+  }
+
+  const finalMom = hdsrMomentum(filtered, homeTeamId, awayTeamId);
+  const last = filtered[filtered.length - 1];
+  if (last) {
+    chartHome.push({ v: finalMom.home, p: last.period, c: last.clock, t: last.wall_clock, hs: last.home_points, as: last.away_points });
+    chartAway.push({ v: finalMom.away, p: last.period, c: last.clock, t: last.wall_clock });
+  }
+
+  function trim(arr) {
+    if (arr.length <= MAX_CHART) return arr;
+    const step = arr.length / MAX_CHART;
+    return Array.from({ length: MAX_CHART }, (_, i) => arr[Math.floor(i * step)]);
+  }
+
+  return { home: finalMom.home, away: finalMom.away, chartHome: trim(chartHome), chartAway: trim(chartAway) };
+}
+
 module.exports = {
   shotXg, isBlockedShot, getBlockingTeam,
   parseZonePossessions, scoreZoneSequence,
   computeZoneMomentum, detectAlerts,
+  hdsrMomentum, hdsrMomentumWithChart,
 };
