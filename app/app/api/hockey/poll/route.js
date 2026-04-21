@@ -1,5 +1,8 @@
 /** /api/hockey/poll — SR NHL scoreboard + PBP, HDSR momentum, alerts */
 
+import { computeGameVolatility } from '../../../../lib/mvix';
+import { recordGameMvix } from '../../../../lib/team-mvix';
+
 const nhl = require('../../../../lib/sportradar-nhl');
 const { hdsrMomentumWithChart, detectAlerts } = require('../../../../lib/sr-nhl-possession');
 
@@ -10,6 +13,9 @@ let   cachedData = null;
 let   cacheTs    = 0;
 let   inFlight   = null;
 const finalCache = new Map(); // gameId → mom (immutable once final)
+
+const mvixLiveRecorded = new Set();
+const mvixFinalized    = new Set();
 
 // ── NHL team primary colours (home jersey) ───────────────────────────────────
 const NHL_COLORS = {
@@ -127,6 +133,15 @@ async function buildHockeyData(dateStr) {
       }
     }
 
+    // Compute MVIX / MRVI
+    if (game.mom?.chartAway && game.mom?.chartHome) {
+      const vol = computeGameVolatility(game.mom.chartAway, game.mom.chartHome, 'NHL');
+      if (vol) {
+        game.mvixAway = vol.away;
+        game.mvixHome = vol.home;
+      }
+    }
+
     // Detect alerts
     if (game.mom) {
       const alerts = detectAlerts(
@@ -144,7 +159,45 @@ async function buildHockeyData(dateStr) {
   const order = { STATUS_IN_PROGRESS: 0, STATUS_HALFTIME: 0, STATUS_SCHEDULED: 1, STATUS_FINAL: 2 };
   games.sort((a, b) => (order[a.status] ?? 3) - (order[b.status] ?? 3));
 
+  // Fire-and-forget DB recording (skipped for historical date queries)
+  if (!dateStr) recordNhlMvix(games);
+
   return { games, timestamp: new Date().toISOString() };
+}
+
+// ── DB recording — runs fire-and-forget after each live poll ─────────────────
+async function recordNhlMvix(games) {
+  for (const g of games) {
+    if (!g.mom?.chartAway || !g.mom?.chartHome) continue;
+    const isLive  = g.status === 'STATUS_IN_PROGRESS' || g.status === 'STATUS_HALFTIME';
+    const isFinal = g.status === 'STATUS_FINAL';
+    if (!isLive && !isFinal) continue;
+    if (mvixFinalized.has(g.id)) continue;
+    if (isLive && mvixLiveRecorded.has(g.id)) continue;
+
+    try {
+      const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, 'NHL');
+      if (!vol?.away || !vol?.home) continue;
+
+      const gameDate = g.date || new Date().toISOString().slice(0, 10);
+      const awayWon  = isFinal ? g.awayScore > g.homeScore : null;
+      const homeWon  = isFinal ? g.homeScore > g.awayScore : null;
+
+      await Promise.all([
+        recordGameMvix(g.awayAbbr, 'NHL', g.id, gameDate, awayWon, `${g.awayScore}-${g.homeScore}`, vol.away),
+        recordGameMvix(g.homeAbbr, 'NHL', g.id, gameDate, homeWon, `${g.homeScore}-${g.awayScore}`, vol.home),
+      ]);
+
+      if (isFinal) {
+        mvixFinalized.add(g.id);
+        mvixLiveRecorded.delete(g.id);
+      } else {
+        mvixLiveRecorded.add(g.id);
+      }
+    } catch (err) {
+      console.error(`NHL MVIX record failed for ${g.id}:`, err.message);
+    }
+  }
 }
 
 // ── Route handler ─────────────────────────────────────────────────────────────
