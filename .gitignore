@@ -43,6 +43,9 @@ swing.db-shm
 swing-backup-*.db
 backups/
 
+# Git worktrees (local-only isolation for implementation work)
+.worktrees/
+
 # Next.js
 .next/
 app/out/
