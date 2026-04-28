@@ -40,9 +40,10 @@ swing-original-conversations.json
 swing.db
 swing.db-wal
 swing.db-shm
+swing-backup-*.db
 
 # Next.js
-app/.next/
+.next/
 app/out/
 .vercel
 mvix-data.json
