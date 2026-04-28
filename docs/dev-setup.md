@@ -135,18 +135,32 @@ node scripts/sr-nhl-validate.js
 
 ## 5. Backing up / moving your dev DB
 
-To produce a portable dump (use the version-matched binary if you have multiple Postgres versions installed):
+Two repo scripts wrap `pg_dump` / `pg_restore` and pick a version-matched binary automatically. They read `POSTGRES_URL` from `app/.env.local`.
+
+**Backup** — writes a custom-format (`-Fc`) dump to `<repo>/backups/swing_dev-<timestamp>.dump`:
 
 ```bash
-/usr/lib/postgresql/14/bin/pg_dump -Fc -h localhost -U swing swing_dev \
-  -f swing_dev-$(date +%Y%m%d).dump
+cd app
+npm run db:backup
 ```
 
-Restore on the target machine after creating an empty `swing_dev`:
+**Restore** to the database referenced by `POSTGRES_URL` (typically `swing_dev`):
 
 ```bash
-pg_restore -h localhost -U swing -d swing_dev swing_dev-YYYYMMDD.dump
+npm run db:restore -- /path/to/swing_dev-YYYYMMDD-HHMMSS.dump
+# clean re-import (drops existing objects first):
+npm run db:restore -- /path/to/swing_dev-YYYYMMDD-HHMMSS.dump --clean
 ```
+
+**Restore into a different DB** — useful for verifying a backup or staging data without touching the live `swing_dev`:
+
+```bash
+sudo -u postgres psql -p 5432 -c 'CREATE DATABASE swing_dev_verify OWNER swing;'
+npm run db:restore -- /path/to/swing_dev-YYYYMMDD-HHMMSS.dump --target-db swing_dev_verify
+sudo -u postgres psql -p 5432 -c 'DROP DATABASE swing_dev_verify;'
+```
+
+The `backups/` directory is git-ignored. Both scripts respect `PG_DUMP` / `PG_RESTORE` env vars if you need to override the binary path.
 
 ---
 

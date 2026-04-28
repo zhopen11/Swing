@@ -41,6 +41,7 @@ swing.db
 swing.db-wal
 swing.db-shm
 swing-backup-*.db
+backups/
 
 # Next.js
 .next/

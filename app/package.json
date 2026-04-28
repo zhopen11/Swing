@@ -12,7 +12,9 @@
     "backfill": "node scripts/backfill.js",
     "analysis": "node scripts/analysis.js",
     "sr-compare": "node scripts/sportradar-compare.js",
-    "live-compare": "node scripts/live-compare.js"
+    "live-compare": "node scripts/live-compare.js",
+    "db:backup": "node --env-file=.env.local scripts/backup-db.js",
+    "db:restore": "node --env-file=.env.local scripts/restore-db.js"
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
