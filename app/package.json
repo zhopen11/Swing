@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@vercel/postgres": "^0.10.0",
-    "git": "^0.1.5",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
     "pg": "^8.20.0",
