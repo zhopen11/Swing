@@ -8,7 +8,7 @@ Real-time NBA + NCAA basketball momentum tracker. Computes possession-level mome
 
 - Pulls live scores + play-by-play from ESPN's public API
 - Computes a 0–100 momentum score per team from a sliding window of the last 12 possession events
-- Persists games, plays, momentum snapshots, and alerts in SQLite
+- Persists users, alerts, MVIX/MRVI snapshots, and per-player swing impact in PostgreSQL
 - Shows sparkline momentum charts, live play feeds, and three alert tiers:
   - ⚡ **SCORE IS BLUFFING** — score and momentum leaders disagree
   - 👀 **COMEBACK WATCH** — trailing team dominates momentum
@@ -20,7 +20,7 @@ Real-time NBA + NCAA basketball momentum tracker. Computes possession-level mome
 
 - **Next.js** (App Router) with plain JavaScript and JSX
 - **Tailwind CSS** for styling
-- **better-sqlite3** for persistence
+- **PostgreSQL** for persistence (Vercel Postgres in prod, local Postgres in dev) via `pg`
 - **Vercel** for deployment
 - **ESPN Public API** for live data (no key required)
 
@@ -28,13 +28,17 @@ Real-time NBA + NCAA basketball momentum tracker. Computes possession-level mome
 
 ## Running Locally
 
+First-time setup (Postgres role/db, env vars, troubleshooting): see [`docs/dev-setup.md`](docs/dev-setup.md).
+
+Once your local Postgres has a `swing_dev` database and `app/.env.local` is in place:
+
 ```bash
 cd app
 npm install
 npm run dev
 ```
 
-Then open: [http://localhost:3000](http://localhost:3000)
+Then open: [http://localhost:4000](http://localhost:4000)
 
 Hot reload is enabled — changes to components and API routes reflect immediately.
 
@@ -57,19 +61,16 @@ vercel deploy --prod
 
 ## Backfill & Analysis
 
-Historical game data can be backfilled from ESPN and analyzed for algorithm accuracy:
+Historical game data can be backfilled from ESPN and analyzed for algorithm accuracy. **Only CBB is backfilled** — NBA is intentionally skipped.
 
 ```bash
 cd app
 
-# Backfill NBA games for a date range
-npm run backfill -- --league NBA --start 2025-10-22 --end 2026-03-13
-
-# Backfill NCAA games
+# Backfill NCAA games for a date range
 npm run backfill -- --league CBB --start 2025-11-03 --end 2026-03-13
 
 # Run analysis on backfill results
-npm run analysis -- --league NBA
+npm run analysis -- --league CBB
 ```
 
 ---
@@ -90,7 +91,7 @@ app/                          Next.js application
 │   ├── momentum.js           Momentum engine (sliding window algorithm)
 │   ├── alerts.js             Three-tier alert detection
 │   ├── espn.js               ESPN API client
-│   └── db.js                 SQLite schema and helpers
+│   └── db.js                 Postgres pool + schema (initDb)
 ├── scripts/                  CLI tools
 │   ├── backfill.js           Historical game backfill
 │   └── analysis.js           Post-backfill reporting

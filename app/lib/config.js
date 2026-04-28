@@ -1,10 +1,6 @@
 /** The Swing — Configuration constants. */
 
-const path = require('path');
-
 module.exports = {
-  DB_PATH: process.env.SWING_DB || path.join(__dirname, '..', '..', 'swing.db'),
-
   POLL_INTERVAL: 10, // seconds
 
   // ESPN API endpoints
