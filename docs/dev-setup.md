@@ -97,6 +97,7 @@ JWT_SECRET=pick-a-long-random-string
 |---|---|---|---|
 | `POSTGRES_URL` | yes | — | Postgres connection string used by `lib/db.js` |
 | `JWT_SECRET` | recommended | `swing-dev-secret` (insecure) | Signs session tokens; set your own even in dev |
+| `SPORTRADAR_NHL_KEY` | optional | — | Sportradar NHL API key. Only needed if you run the NHL cache/validate scripts (`scripts/sr-nhl-*.js`). The app itself runs fine without it — Sportradar is a read-only data source like ESPN. |
 
 `.env.local` is git-ignored. Do not commit it.
 
@@ -114,13 +115,21 @@ Hot reload is on. API routes live under `app/app/api/**`.
 Useful scripts:
 
 ```bash
-npm run backfill   # node scripts/backfill.js — historical ESPN backfill
-npm run analysis   # node scripts/analysis.js — MVIX/MRVI computation
+npm run backfill        # historical ESPN backfill (CBB only — NBA is skipped by design)
+npm run analysis        # MVIX/MRVI computation
+npm run sr-compare      # compare ESPN vs Sportradar play-by-play (NBA)
+npm run live-compare    # live ESPN/Sportradar comparison
 npm run lint
 npm run format
 ```
 
-Backfill note: only college (CBB) games should be backfilled — NBA is always skipped by design. See `scripts/backfill.js`.
+NHL data scripts (require `SPORTRADAR_NHL_KEY` in your env):
+
+```bash
+node scripts/sr-nhl-cache.js      --date 2026-04-19
+node scripts/sr-nhl-cache-bulk.js --start 2026-02-01 --end 2026-04-18
+node scripts/sr-nhl-validate.js
+```
 
 ---
 
