@@ -12,7 +12,7 @@ Tested on Ubuntu 24.04. macOS notes are inline where they differ.
 |---|---|---|
 | Node.js | 20.x or newer | Next 16 requires Node ≥ 20.18 |
 | npm | bundled with Node | |
-| PostgreSQL | 14, 15, or 16 | 14 is what's currently in use |
+| PostgreSQL | 14+ | Ubuntu 24.04 installs PG16 by default; macOS Homebrew is similar. The doc uses `$PG_VER` for version-specific paths — see § 2 |
 | git | any | |
 | build tools | `build-essential` (Linux) / Xcode CLT (macOS) | needed for native deps |
 
@@ -24,11 +24,11 @@ sudo apt install -y build-essential git curl postgresql postgresql-contrib
 # Node via NodeSource, n, nvm, or asdf — whatever you prefer
 ```
 
-macOS install (Homebrew):
+macOS install (Homebrew — substitute the major version Homebrew installs for you):
 
 ```bash
-brew install git node@20 postgresql@14
-brew services start postgresql@14
+brew install git node@20 postgresql@16
+brew services start postgresql@16
 ```
 
 ---
@@ -41,7 +41,7 @@ cd Swing/app
 npm install
 ```
 
-`npm install` will compile some native modules (`better-sqlite3` is a transitive holdover; the running app uses Postgres). On Linux make sure `build-essential` is installed first or it will fail.
+`npm install` will compile some native modules (e.g. `pg`'s deps). On Linux make sure `build-essential` is installed first or it will fail.
 
 ---
 
@@ -49,7 +49,36 @@ npm install
 
 The app expects a Postgres database named `swing_dev` accessible to a role named `swing` over TCP on `localhost:5432`. Defaults assume the standard Ubuntu/Homebrew install — peer auth on the local Unix socket and `scram-sha-256` on TCP loopback.
 
-Create the role and database (Ubuntu — uses peer auth as the `postgres` OS user):
+### Pin your Postgres major version
+
+Subsequent commands reference `/etc/postgresql/$PG_VER/main/...` and `/usr/lib/postgresql/$PG_VER/bin/...`. Set the variable once so you can paste commands verbatim:
+
+```bash
+PG_VER=$(pg_lsclusters -h | awk 'NR==1{print $1}')
+echo "Postgres major version: $PG_VER"
+```
+
+Ubuntu 24.04 installs PG16 by default. Other versions are fine — the only thing that matters is that `$PG_VER` matches an actual cluster on your machine.
+
+### Ubuntu + xrdp preflight (skip on macOS or boxes without xrdp)
+
+If `xrdp` is installed on the box, it will (on first start) regenerate `/etc/ssl/private/ssl-cert-snakeoil.key` with `xrdp:xrdp` ownership. Postgres then refuses to start because it can't read the key — startup fails silently from systemd's perspective. This is effectively required preflight on any xrdp-equipped Ubuntu host:
+
+```bash
+# Check whether xrdp is on the box
+dpkg -l xrdp 2>/dev/null | grep -q '^ii' && echo "xrdp present — apply preflight" || echo "no xrdp — skip"
+
+# If xrdp is present, disable Postgres SSL on the dev cluster (snakeoil certs
+# aren't real security on loopback, and xrdp may clobber the key again later).
+sudo sed -i 's/^ssl = on/ssl = off/' /etc/postgresql/$PG_VER/main/postgresql.conf
+sudo pg_ctlcluster $PG_VER main restart
+```
+
+If you'd rather keep SSL on, regenerate the key with proper ownership instead — see Troubleshooting below.
+
+### Create the role and database
+
+Ubuntu (uses peer auth as the `postgres` OS user):
 
 ```bash
 sudo -u postgres psql <<'SQL'
@@ -168,20 +197,14 @@ The `backups/` directory is git-ignored. Both scripts respect `PG_DUMP` / `PG_RE
 
 ### Postgres won't start: "private key file ... must be owned by the database user or root"
 
-If you have `xrdp` installed on Ubuntu, it can clobber the system snakeoil SSL key (`/etc/ssl/private/ssl-cert-snakeoil.key`), changing ownership to `xrdp:xrdp`. Postgres then refuses to start because it can't read the key.
+`xrdp` installs/regenerates the system snakeoil SSL key (`/etc/ssl/private/ssl-cert-snakeoil.key`) with `xrdp:xrdp` ownership, which Postgres rejects. The xrdp preflight in § 2 turns SSL off to sidestep this. If you want to keep SSL on instead, regenerate the key:
 
-Two fixes:
+```bash
+sudo make-ssl-cert generate-default-snakeoil --force-overwrite
+sudo pg_ctlcluster $PG_VER main start
+```
 
-1. **Regenerate the key** (canonical):
-   ```bash
-   sudo make-ssl-cert generate-default-snakeoil --force-overwrite
-   sudo pg_ctlcluster 14 main start
-   ```
-2. **Disable SSL on the dev cluster** (recommended on a dev box, since loopback-only with self-signed certs isn't real security and xrdp may clobber it again):
-   ```bash
-   sudo sed -i 's/^ssl = on/ssl = off/' /etc/postgresql/14/main/postgresql.conf
-   sudo pg_ctlcluster 14 main restart
-   ```
+Note that xrdp may clobber the key again on its next restart — disabling SSL on the dev cluster is the more durable fix for a dev box.
 
 ### Multiple Postgres versions installed
 
@@ -191,7 +214,7 @@ Ubuntu can leave 14/15/16 clusters side-by-side after distro upgrades. Inspect w
 sudo pg_lsclusters
 ```
 
-The app expects port 5432 (the default for 14). If a different version owns 5432, either point `POSTGRES_URL` at the right port or drop the unused clusters:
+The app expects port 5432. If a different version owns 5432, either point `POSTGRES_URL` at the right port (each cluster gets its own port — 5432, 5433, ...) or drop the unused clusters:
 
 ```bash
 sudo pg_dropcluster 15 main   # only if it has no data you care about
@@ -199,11 +222,11 @@ sudo pg_dropcluster 15 main   # only if it has no data you care about
 
 ### `pg_dump` version mismatch
 
-The default `pg_dump` on PATH may be older than your server. Use the version-matched binary directly:
+The default `pg_dump` on PATH may be older than your server. Use the version-matched binary directly (the `db:backup`/`db:restore` scripts pick this automatically):
 
 ```bash
 ls /usr/lib/postgresql/      # see installed versions
-/usr/lib/postgresql/14/bin/pg_dump --version
+/usr/lib/postgresql/$PG_VER/bin/pg_dump --version
 ```
 
 ### `psql: connection refused` on port 5432
@@ -212,7 +235,7 @@ The cluster isn't running. Check:
 
 ```bash
 sudo pg_lsclusters
-sudo journalctl -xeu postgresql@14-main.service --no-pager | tail -40
+sudo journalctl -xeu postgresql@$PG_VER-main.service --no-pager | tail -40
 ```
 
 ### Native module build failures during `npm install`
