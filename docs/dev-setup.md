@@ -126,7 +126,7 @@ JWT_SECRET=pick-a-long-random-string
 |---|---|---|---|
 | `POSTGRES_URL` | yes | — | Postgres connection string used by `lib/db.js` |
 | `JWT_SECRET` | recommended | `swing-dev-secret` (insecure) | Signs session tokens; set your own even in dev |
-| `SPORTRADAR_NHL_KEY` | optional | — | Sportradar NHL API key. Only needed if you run the NHL cache/validate scripts (`scripts/sr-nhl-*.js`). The app itself runs fine without it — Sportradar is a read-only data source like ESPN. |
+| `SPORTRADAR_NHL_KEY` | required for Hockey tab | — | Sportradar NHL API key. The Hockey tab fetches the NHL daily schedule and play-by-play through Sportradar at request time (`app/api/hockey/poll`); without this key the tab renders an empty list (see Troubleshooting → "Hockey tab is empty"). Also needed by the NHL cache/validate scripts (`scripts/sr-nhl-*.js`). The rest of the app — NBA, CBB, analysis, polls — does not depend on it. |
 
 `.env.local` is git-ignored. Do not commit it.
 
@@ -242,6 +242,12 @@ sudo journalctl -xeu postgresql@$PG_VER-main.service --no-pager | tail -40
 
 Install `build-essential` (Linux) or Xcode Command Line Tools (`xcode-select --install` on macOS), then re-run `npm install`.
 
+### Hockey tab is empty
+
+The Hockey tab silently renders no games when `SPORTRADAR_NHL_KEY` is not set in `app/.env.local`. The poll route (`app/api/hockey/poll`) catches the missing-key error and returns `200` with `games: []`, so the empty UI is visually indistinguishable from "no games today." Check the dev server log for `NHL schedule fetch failed: SPORTRADAR_NHL_KEY is not set` to confirm. Adding the key to `.env.local` and reloading the tab is the fix.
+
+Known UX gap: the route should ideally surface the failure to the client (e.g. a `503` or an explicit `error` field in the JSON) rather than swallowing it. Tracking issue / PR welcome.
+
 ---
 
 ## Architecture quick reference
@@ -249,7 +255,7 @@ Install `build-essential` (Linux) or Xcode Command Line Tools (`xcode-select --i
 - **Frontend + API:** Next.js 16 App Router (`app/app/`)
 - **Data layer:** `app/lib/db.js` — thin `pg.Pool` wrapper exposing a `sql\`\`` template tag
 - **Schema:** auto-created via `initDb()` in `lib/db.js` (CREATE TABLE IF NOT EXISTS for every table)
-- **External data:** ESPN public scoreboard + summary endpoints (no API key required)
+- **External data:** ESPN public scoreboard + summary endpoints (no API key required) for NBA and CBB; Sportradar for NHL (requires `SPORTRADAR_NHL_KEY`)
 - **Production DB:** Vercel Postgres; locally we connect to plain Postgres with the same `pg` interface
 
 For data flow, momentum math, and analytics specs see the other docs in `/docs`.
