@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAlertLogs } from '../../../../../lib/alert-logs';
+import { sql } from '../../../../lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,10 +9,12 @@ function toAlertType(dbType) {
 }
 
 export async function GET(request, { params }) {
-  const { gameId } = await params;
+  const { id } = await params;
   try {
-    const logs = await getAlertLogs(gameId);
-    return NextResponse.json(logs.map((row) => ({
+    const { rows } = await sql`SELECT * FROM alert_logs WHERE id = ${id} LIMIT 1`;
+    if (!rows.length) return NextResponse.json({ error: 'not found' }, { status: 404 });
+    const row = rows[0];
+    return NextResponse.json({
       id: row.id,
       gameId: row.game_id,
       type: toAlertType(row.alert_type),
@@ -33,9 +35,9 @@ export async function GET(request, { params }) {
           swingScore: row.home_momentum ?? 0, rank: 2,
         } : null,
       ].filter(Boolean),
-    })));
+    });
   } catch (err) {
-    console.error(`[/api/games/${gameId}/alerts] error:`, err);
-    return NextResponse.json([], { status: 500 });
+    console.error(`[/api/alerts/${id}] error:`, err);
+    return NextResponse.json({ error: 'internal error' }, { status: 500 });
   }
 }
