@@ -306,12 +306,12 @@ export default function LiveScreen() {
             <SectionHeader title="LIVE NOW" />
             <FollowingEmptyState />
           </>
-        ) : (
+        ) : upcoming.length === 0 ? (
           <>
             <SectionHeader title="LIVE NOW" />
             <NoLiveGamesState />
           </>
-        )
+        ) : null
       )}
 
       {/* Empty state for non-today dates with no games at all */}
@@ -389,10 +389,10 @@ export default function LiveScreen() {
         renderItem={renderLiveGame}
         ListHeaderComponent={ListHeader}
         ListFooterComponent={
-          <>
+          <View>
             {FinalSection}
             {UpcomingSection}
-          </>
+          </View>
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
