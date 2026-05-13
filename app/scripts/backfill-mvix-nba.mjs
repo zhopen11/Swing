@@ -52,10 +52,12 @@ const require = createRequire(import.meta.url);
 const espn = require('../lib/espn.js');
 const { computeMomentumFromPlays } = require('../lib/momentum.js');
 const { computePossessionMomentumWithChart } = require('../lib/sr-possession.js');
+const { computeGameSwingImpact } = require('../lib/swing-impact.js');
 
 // ESM modules
 const { computeGameVolatility } = await import('../lib/mvix.js');
 const { recordGameMvix } = await import('../lib/team-mvix.js');
+const { hasSwingImpact, recordPlayerSwingImpact } = await import('../lib/player-swing.js');
 
 // ── Config ─────────────────────────────────────────────────────────────────────
 
@@ -178,6 +180,19 @@ async function main() {
           recordGameMvix(g.awayAbbr, 'NBA', gameId, gameDate, awayWon, awayScore, vol.away),
           recordGameMvix(g.homeAbbr, 'NBA', gameId, gameDate, homeWon, homeScore, vol.home),
         ]);
+
+        // Swing impact — only write if not already stored
+        if (!(await hasSwingImpact(gameId))) {
+          const si = computeGameSwingImpact(plays, summary, g);
+          if (si) {
+            const awayInfl = { total: si.away.inflections.length, up: si.away.inflections.filter(i => i.upward).length, down: si.away.inflections.filter(i => !i.upward).length };
+            const homeInfl = { total: si.home.inflections.length, up: si.home.inflections.filter(i => i.upward).length, down: si.home.inflections.filter(i => !i.upward).length };
+            await Promise.all([
+              recordPlayerSwingImpact(gameId, gameDate, 'NBA', g.awayAbbr, si.away.leaderboard, awayInfl, null, null),
+              recordPlayerSwingImpact(gameId, gameDate, 'NBA', g.homeAbbr, si.home.leaderboard, homeInfl, null, null),
+            ]);
+          }
+        }
       }
 
       console.log(

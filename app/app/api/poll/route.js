@@ -15,7 +15,7 @@ const { computeGameSwingImpact } = require('../../../lib/swing-impact');
 import { computeGameVolatility } from '../../../lib/mvix';
 import { recordGameMvix, getRolling3Excluding } from '../../../lib/team-mvix';
 import { logAlert, getAlertLogs } from '../../../lib/alert-logs';
-import { getRecentTeamSwingers } from '../../../lib/player-swing';
+import { getRecentTeamSwingers, hasSwingImpact, recordPlayerSwingImpact } from '../../../lib/player-swing';
 import { captureGameOdds, getGameOddsBatch } from '../../../lib/game-odds';
 
 const LIVE_STATUSES = new Set(['STATUS_IN_PROGRESS', 'STATUS_HALFTIME']);
@@ -237,6 +237,25 @@ async function recordGamesMvix(games) {
         mvixFinalized.add(gameKey);
         mvixLiveRecorded.delete(gameKey);
         console.log(`MVIX finalized: ${g.awayAbbr} vs ${g.homeAbbr} (${g.id})`);
+
+        // Persist swing impact on finalization (non-fatal)
+        try {
+          if (g.swingers && !(await hasSwingImpact(g.id))) {
+            const fSummary = await fetchGameSummary(g.id, g.league).catch(() => null);
+            const fPlays = fSummary ? getPlaysFromSummary(fSummary) : [];
+            const si = fPlays.length ? computeGameSwingImpact(fPlays, fSummary, g) : null;
+            if (si) {
+              const awayInfl = { total: si.away.inflections.length, up: si.away.inflections.filter(i => i.upward).length, down: si.away.inflections.filter(i => !i.upward).length };
+              const homeInfl = { total: si.home.inflections.length, up: si.home.inflections.filter(i => i.upward).length, down: si.home.inflections.filter(i => !i.upward).length };
+              await Promise.all([
+                recordPlayerSwingImpact(g.id, gameDate, g.league, g.awayAbbr, si.away.leaderboard, awayInfl, null, null),
+                recordPlayerSwingImpact(g.id, gameDate, g.league, g.homeAbbr, si.home.leaderboard, homeInfl, null, null),
+              ]);
+            }
+          }
+        } catch (err) {
+          console.warn(`Swing impact persist failed for ${g.id}:`, err.message);
+        }
       } else {
         mvixLiveRecorded.add(gameKey);
         console.log(`MVIX initial: ${g.awayAbbr} vs ${g.homeAbbr} (${g.id})`);
