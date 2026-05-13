@@ -35,9 +35,9 @@ module.exports = {
   // Normalization range (CBB)
   RAW_MIN: -15,
   RAW_MAX: 15,
-  // NBA wider raw range — higher shooting %, more 3s, fewer turnovers
-  NBA_RAW_MIN: -22,
-  NBA_RAW_MAX: 22,
+  // NBA uses same range — wider ±22 was theoretical but compressed scores to 35–75 in practice
+  NBA_RAW_MIN: -15,
+  NBA_RAW_MAX: 15,
   NORM_MIN: 5,
   NORM_MAX: 95,
 
