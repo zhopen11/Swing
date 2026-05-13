@@ -14,16 +14,20 @@ function stdDev(values) {
 
 async function buildTeamStats(abbr, league, currentGameId) {
   const mvixResult = await sql`
-    SELECT game_id, game_date, won, score, mvix FROM team_mvix
+    SELECT game_id, game_date, won, score, mvix, avg_game_momentum FROM team_mvix
     WHERE team = ${abbr} AND league = ${league} AND game_id != ${currentGameId}
     ORDER BY game_date DESC LIMIT 10
   `;
   const rows = mvixResult.rows ?? [];
   if (!rows.length) return undefined;
 
+  const momRows = rows.filter((r) => r.avg_game_momentum != null);
+  const momValues = momRows.map((r) => r.avg_game_momentum);
+  const avgMomentum = momValues.length
+    ? Math.round(momValues.reduce((a, b) => a + b, 0) / momValues.length)
+    : null;
+  const avgMomentumDelta = momValues.length >= 2 ? momValues[0] - momValues[1] : 0;
   const mvixValues = rows.map((r) => r.mvix ?? 0);
-  const avgMomentum = Math.round(mvixValues.reduce((a, b) => a + b, 0) / mvixValues.length);
-  const avgMomentumDelta = mvixValues.length >= 2 ? mvixValues[0] - mvixValues[1] : 0;
   const sd = stdDev(mvixValues);
 
   const swingResult = await sql`

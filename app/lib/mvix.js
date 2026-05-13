@@ -198,5 +198,10 @@ export function computeGameVolatility(chartAway, chartHome, league) {
     homeVol.combo = Math.round((-homeVol.mvix + homeVol.mrvi) * 10) / 10;
   }
 
+  // Mean of all chart point values — average momentum position throughout the game
+  const meanChart = (chart) => Math.round(chart.reduce((s, p) => s + p.v, 0) / chart.length);
+  awayVol.avgGameMomentum = meanChart(chartAway);
+  homeVol.avgGameMomentum = meanChart(chartHome);
+
   return { away: awayVol, home: homeVol };
 }

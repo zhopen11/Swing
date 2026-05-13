@@ -181,8 +181,8 @@ async function main() {
       }
 
       console.log(
-        `ok  away MVIX=${vol.away.mvix} MRVI=${vol.away.mrvi != null ? Math.round(vol.away.mrvi) : '–'}` +
-        `  home MVIX=${vol.home.mvix} MRVI=${vol.home.mrvi != null ? Math.round(vol.home.mrvi) : '–'}`
+        `ok  away MVIX=${vol.away.mvix} MRVI=${vol.away.mrvi != null ? Math.round(vol.away.mrvi) : '–'} avgMom=${vol.away.avgGameMomentum ?? '–'}` +
+        `  home MVIX=${vol.home.mvix} MRVI=${vol.home.mrvi != null ? Math.round(vol.home.mrvi) : '–'} avgMom=${vol.home.avgGameMomentum ?? '–'}`
       );
       processed++;
     } catch (err) {

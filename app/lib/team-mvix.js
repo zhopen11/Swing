@@ -99,7 +99,7 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       avg_up_magnitude, avg_down_magnitude,
       rolling_avg_up_magnitude, rolling_mvix,
       mrvi, combo, conf, conf_strength, adj_mvix, adj_mrvi,
-      games_in_rolling
+      games_in_rolling, avg_game_momentum
     ) VALUES (
       ${team}, ${league}, ${gameId}, ${gameDate}, ${won}, ${score},
       ${vol.mvix}, ${vol.mvixUp}, ${vol.mvixDown}, ${vol.bias},
@@ -108,7 +108,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       ${Math.round(rollingAvgUp * 100) / 100},
       ${Math.round(rollingMvix * 100) / 100},
       ${vol.mrvi ?? null}, ${vol.combo ?? null},
-      ${conf}, ${confStr}, ${adjMvixVal}, ${adjMrviVal}, ${n}
+      ${conf}, ${confStr}, ${adjMvixVal}, ${adjMrviVal}, ${n},
+      ${vol.avgGameMomentum ?? null}
     )
     ON CONFLICT (team, game_id) DO UPDATE SET
       won = EXCLUDED.won,
@@ -129,7 +130,8 @@ export async function recordGameMvix(team, league, gameId, gameDate, won, score,
       conf_strength = EXCLUDED.conf_strength,
       adj_mvix = EXCLUDED.adj_mvix,
       adj_mrvi = EXCLUDED.adj_mrvi,
-      games_in_rolling = EXCLUDED.games_in_rolling
+      games_in_rolling = EXCLUDED.games_in_rolling,
+      avg_game_momentum = EXCLUDED.avg_game_momentum
   `;
 
   return {
