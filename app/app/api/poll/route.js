@@ -99,17 +99,17 @@ async function buildPollData(dateStr) {
             g.league
           );
 
-          // For NBA games, replace momentum scores AND chart with the SR possession
-          // model so the sparkline always tells the same story as the alert values.
-          // recentPlays and scoredPlays stay on ESPN data for play-feed display.
+          // For NBA games, override the scalar momentum scores with the SR possession
+          // model (possession-quality aware, better alert accuracy) while keeping the
+          // ESPN sliding-window chart for MVIX — the SR model's exponential decay
+          // produces charts that are too smooth for meaningful volatility measurement.
           if (g.league === 'NBA' && g.mom) {
             const srMom = computePossessionMomentumWithChart(
               plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId
             );
-            g.mom.away      = srMom.away;
-            g.mom.home      = srMom.home;
-            g.mom.chartAway = srMom.chartAway;
-            g.mom.chartHome = srMom.chartHome;
+            g.mom.away = srMom.away;
+            g.mom.home = srMom.home;
+            // chartAway / chartHome intentionally kept from ESPN model
           }
 
           if (g.status === 'STATUS_FINAL') {

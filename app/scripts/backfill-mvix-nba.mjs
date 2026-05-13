@@ -50,6 +50,7 @@ if (!process.env.POSTGRES_URL) {
 // CJS modules
 const require = createRequire(import.meta.url);
 const espn = require('../lib/espn.js');
+const { computeMomentumFromPlays } = require('../lib/momentum.js');
 const { computePossessionMomentumWithChart } = require('../lib/sr-possession.js');
 
 // ESM modules
@@ -144,11 +145,14 @@ async function main() {
         continue;
       }
 
-      const srMom = computePossessionMomentumWithChart(
-        plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId
+      // ESPN sliding-window chart — same model used for NCAAB and live MVIX display.
+      // SR possession model provides the scalar scores (alert accuracy) but its
+      // exponential decay produces charts too smooth for meaningful MVIX values.
+      const espnMom = computeMomentumFromPlays(
+        plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId, 'NBA'
       );
 
-      if (!srMom?.chartAway?.length || !srMom?.chartHome?.length) {
+      if (!espnMom?.chartAway?.length || !espnMom?.chartHome?.length) {
         console.log('skip (no chart)');
         skipped++;
         await sleep(DELAY_MS);
@@ -156,7 +160,7 @@ async function main() {
       }
 
       // computeGameVolatility already attaches mrvi and combo internally
-      const vol = computeGameVolatility(srMom.chartAway, srMom.chartHome, 'NBA');
+      const vol = computeGameVolatility(espnMom.chartAway, espnMom.chartHome, 'NBA');
       if (!vol?.away || !vol?.home) {
         console.log('skip (no volatility)');
         skipped++;
