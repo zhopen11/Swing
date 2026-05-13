@@ -99,18 +99,9 @@ async function buildPollData(dateStr) {
             g.league
           );
 
-          // For NBA games, override the scalar momentum scores with the SR possession
-          // model (possession-quality aware, better alert accuracy) while keeping the
-          // ESPN sliding-window chart for MVIX — the SR model's exponential decay
-          // produces charts that are too smooth for meaningful volatility measurement.
-          if (g.league === 'NBA' && g.mom) {
-            const srMom = computePossessionMomentumWithChart(
-              plays, g.awayAbbr, g.homeAbbr, g.awayId, g.homeId
-            );
-            g.mom.away = srMom.away;
-            g.mom.home = srMom.home;
-            // chartAway / chartHome intentionally kept from ESPN model
-          }
+          // NBA uses the ESPN sliding-window model for everything (same as NCAAB).
+          // The SR possession model's decay causes final scores to settle near 50
+          // regardless of game flow, making headers inconsistent with the chart.
 
           if (g.status === 'STATUS_FINAL') {
             finalMomCache.set(g.id, g.mom);
