@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "version": ">= 16.0.0"
+  },
+  "build": {
+    "production": {
+      "node": "24.0.0",
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://the-swing.vercel.app"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
+    },
+    "dev": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://the-swing.vercel.app"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "EXPO_PUBLIC_API_BASE_URL": "https://the-swing.vercel.app"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6768698809"
+      },
+      "android": {
+        "track": "internal"
+      }
+    }
+  }
+}
