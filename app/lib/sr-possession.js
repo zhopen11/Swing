@@ -455,11 +455,13 @@ function computePossessionMomentum(possessions, awayAlias, homeAlias, K = 15, de
     else if (team === (homeAlias || '').toUpperCase()) homeRaw += poss.score * weight;
   }
 
-  // Normalize to 0–100. RAW_RANGE defined at top of file.
-  const awayAdv = Math.max(-RAW_RANGE, Math.min(RAW_RANGE, awayRaw - homeRaw));
-
-  const awayScore = 50 + (awayAdv / RAW_RANGE) * 50;
-  const homeScore = 100 - awayScore;
+  // Normalize each team independently to 0–100 so the two lines are not
+  // forced mirrors of each other. RAW_RANGE is the max expected weighted
+  // sum for a single team's possessions (same magnitude works for both
+  // the individual and the difference, since one team dominates ≈ the
+  // other team scoring ~0).
+  const awayScore = 50 + (Math.max(-RAW_RANGE, Math.min(RAW_RANGE, awayRaw)) / RAW_RANGE) * 50;
+  const homeScore = 50 + (Math.max(-RAW_RANGE, Math.min(RAW_RANGE, homeRaw)) / RAW_RANGE) * 50;
 
   return {
     away: Math.round(Math.max(0, Math.min(100, awayScore))),
