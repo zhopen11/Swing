@@ -396,6 +396,7 @@ export default function LiveScreen() {
 
   // Sim mode
   const simIsActive = useSimStore((s) => s.isActive);
+  const simIsLoading = useSimStore((s) => s.isLoading);
   const simFrames = useSimStore((s) => s.frames);
   const simFrameIndex = useSimStore((s) => s.frameIndex);
   const simActivate = useSimStore((s) => s.activate);
@@ -409,18 +410,21 @@ export default function LiveScreen() {
   const handleWordmarkTap = useCallback(() => {
     tapCount.current += 1;
     if (tapTimer.current) clearTimeout(tapTimer.current);
-    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 800);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 1000);
     if (tapCount.current >= 5) {
       tapCount.current = 0;
       if (tapTimer.current) clearTimeout(tapTimer.current);
-      if (!simIsActive) {
+      if (!simIsActive && !simIsLoading) {
         useSimStore.setState({ isLoading: true });
         getSimReplay()
           .then((replay) => simActivate(replay))
-          .catch(() => useSimStore.setState({ isLoading: false }));
+          .catch(() => {
+            useSimStore.setState({ isLoading: false });
+            Alert.alert('Sim Error', 'Could not load sim data. Check your connection.');
+          });
       }
     }
-  }, [simIsActive, simActivate]);
+  }, [simIsActive, simIsLoading, simActivate]);
 
   const gamesForFilter = simIsActive ? simGames : data?.games;
   const { live, upcoming, final } = useFilteredGames(gamesForFilter);
@@ -540,7 +544,9 @@ export default function LiveScreen() {
       <View style={styles.header}>
         <Pressable onPress={handleWordmarkTap}>
           <Text style={styles.wordmark}>SWING</Text>
-          <Text style={styles.subtitle}>{simIsActive ? 'SIM MODE' : 'LIVE'}</Text>
+          <Text style={styles.subtitle}>
+            {simIsLoading ? 'LOADING...' : simIsActive ? 'SIM MODE' : 'LIVE'}
+          </Text>
         </Pressable>
         <View style={styles.headerActions}>
           <Pressable
