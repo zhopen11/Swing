@@ -287,20 +287,26 @@ function SimScrubber({
   onScrub: (index: number) => void;
 }) {
   const trackWidth = useRef(0);
+  const onScrubRef = useRef(onScrub);
+  const frameCountRef = useRef(frameCount);
+  useEffect(() => { onScrubRef.current = onScrub; }, [onScrub]);
+  useEffect(() => { frameCountRef.current = frameCount; }, [frameCount]);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
+        if (trackWidth.current === 0) return;
         const x = evt.nativeEvent.locationX;
         const clamped = Math.max(0, Math.min(x, trackWidth.current));
-        onScrub(Math.round((clamped / trackWidth.current) * (frameCount - 1)));
+        onScrubRef.current(Math.round((clamped / trackWidth.current) * (frameCountRef.current - 1)));
       },
       onPanResponderMove: (evt) => {
+        if (trackWidth.current === 0) return;
         const x = evt.nativeEvent.locationX;
         const clamped = Math.max(0, Math.min(x, trackWidth.current));
-        onScrub(Math.round((clamped / trackWidth.current) * (frameCount - 1)));
+        onScrubRef.current(Math.round((clamped / trackWidth.current) * (frameCountRef.current - 1)));
       },
     }),
   ).current;
