@@ -107,7 +107,9 @@ export default function AlertsScreen() {
                   <>
                     <SectionHeader title="LIVE" count={liveAlerts.length} />
                     {liveAlerts.map((a) => (
-                      <LiveAlertCard key={a.id} alert={a} />
+                      <View key={a.id} pointerEvents={simIsActive ? 'none' : 'auto'}>
+                        <LiveAlertCard alert={a} />
+                      </View>
                     ))}
                   </>
                 )}
@@ -117,7 +119,9 @@ export default function AlertsScreen() {
                   <>
                     <SectionHeader title="EARLIER TODAY" count={finishedAlerts.length} />
                     {finishedAlerts.map((a) => (
-                      <FinishedAlertCard key={a.id} alert={a} />
+                      <View key={a.id} pointerEvents={simIsActive ? 'none' : 'auto'}>
+                        <FinishedAlertCard alert={a} />
+                      </View>
                     ))}
                   </>
                 )}

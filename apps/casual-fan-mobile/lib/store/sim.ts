@@ -36,8 +36,25 @@ function deriveAlerts(frames: SimFrame[], events: SimAlertEvent[], index: number
       momentumPct: e.momentumPct,
       pointGap: e.pointGap,
       result: finalIds.has(e.gameId) ? 'HIT' : undefined,
-      insight: undefined,
-      swingers: undefined,
+      insight: `${e.awayAbbr} ${e.awayScore} · ${e.homeAbbr} ${e.homeScore}  Q${e.period} ${e.gameClock}`,
+      swingers: [
+        {
+          playerId: `${e.gameId}-${e.awayAbbr}`,
+          name: e.awayAbbr,
+          position: '',
+          team: { abbr: e.awayAbbr, name: e.awayAbbr, fullName: e.awayAbbr, league: 'NBA' as const },
+          swingScore: Math.round(e.momentumPct),
+          rank: 1,
+        },
+        {
+          playerId: `${e.gameId}-${e.homeAbbr}`,
+          name: e.homeAbbr,
+          position: '',
+          team: { abbr: e.homeAbbr, name: e.homeAbbr, fullName: e.homeAbbr, league: 'NBA' as const },
+          swingScore: Math.round(100 - e.momentumPct),
+          rank: 2,
+        },
+      ],
     }));
 }
 
