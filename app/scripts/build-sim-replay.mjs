@@ -51,8 +51,8 @@ function buildGameAtFrame(g, allPlays, simTime) {
     return {
       id: g.id, league: g.league, state: 'scheduled',
       startsAt: g.date,
-      away: { team: { abbr: g.awayAbbr, name: g.awayName, fullName: g.awayName, league: g.league }, score: undefined, momentum: undefined },
-      home: { team: { abbr: g.homeAbbr, name: g.homeName, fullName: g.homeName, league: g.league }, score: undefined, momentum: undefined },
+      away: { team: { abbr: g.awayAbbr, name: g.awayName, fullName: g.awayName, league: g.league }, score: null, momentum: null },
+      home: { team: { abbr: g.homeAbbr, name: g.homeName, fullName: g.homeName, league: g.league }, score: null, momentum: null },
       _rawStatus: 'STATUS_SCHEDULED', _alerts: { bluffing: false, comeback: false, swingWarning: false },
     };
   }
@@ -111,12 +111,12 @@ function buildGameAtFrame(g, allPlays, simTime) {
     away: {
       team: { abbr: g.awayAbbr, name: g.awayName, fullName: g.awayName, league: g.league },
       score: awayScore,
-      momentum: mom?.away != null ? Math.round(mom.away) : undefined,
+      momentum: mom?.away != null ? Math.round(mom.away) : null,
     },
     home: {
       team: { abbr: g.homeAbbr, name: g.homeName, fullName: g.homeName, league: g.league },
       score: homeScore,
-      momentum: mom?.home != null ? Math.round(mom.home) : undefined,
+      momentum: mom?.home != null ? Math.round(mom.home) : null,
     },
     _rawStatus: rawStatus,
     _alerts: alerts,
