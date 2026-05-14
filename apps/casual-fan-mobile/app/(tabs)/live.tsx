@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useState } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Pressable,
   Alert,
+  PanResponder,
 } from 'react-native';
 import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -58,6 +59,8 @@ import { colors } from '@/lib/theme/colors';
 import { type as t, fonts } from '@/lib/theme/typography';
 import { space } from '@/lib/theme/spacing';
 import type { GameDetail } from '@/lib/api/types';
+import { getSimReplay } from '@/lib/api/sim';
+import { useSimStore, useSimGames } from '@/lib/store/sim';
 
 // ─── Date navigator ──────────────────────────────────────────────────────────
 
@@ -236,6 +239,144 @@ function SectionHeader({ title, count }: { title: string; count?: number }) {
   );
 }
 
+// ─── Sim banner ───────────────────────────────────────────────────────────────
+
+function SimBanner({ label, onExit }: { label: string; onExit: () => void }) {
+  return (
+    <View style={simStyles.banner}>
+      <Text style={simStyles.bannerText}>SIM · MAR 20</Text>
+      <Text style={simStyles.bannerTime}>{label}</Text>
+      <Pressable onPress={onExit} hitSlop={12} style={simStyles.bannerExit}>
+        <Text style={simStyles.bannerExitText}>✕</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+const simStyles = StyleSheet.create({
+  banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.alertYellow + '22',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.alertYellow,
+    marginHorizontal: space.base,
+    marginBottom: space.xs,
+    borderRadius: 6,
+    paddingHorizontal: space.base,
+    paddingVertical: 6,
+    gap: space.sm,
+  },
+  bannerText: { fontFamily: fonts.mono, fontSize: 10, color: colors.alertYellow, letterSpacing: 1.5 },
+  bannerTime: { fontFamily: fonts.mono, fontSize: 10, color: colors.textSecondary, flex: 1 },
+  bannerExit: { padding: 2 },
+  bannerExitText: { fontFamily: fonts.mono, fontSize: 11, color: colors.textMuted },
+});
+
+// ─── Sim scrubber ─────────────────────────────────────────────────────────────
+
+function SimScrubber({
+  frameIndex,
+  frameCount,
+  currentLabel,
+  onScrub,
+}: {
+  frameIndex: number;
+  frameCount: number;
+  currentLabel: string;
+  onScrub: (index: number) => void;
+}) {
+  const trackWidth = useRef(0);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        const x = evt.nativeEvent.locationX;
+        const clamped = Math.max(0, Math.min(x, trackWidth.current));
+        onScrub(Math.round((clamped / trackWidth.current) * (frameCount - 1)));
+      },
+      onPanResponderMove: (evt) => {
+        const x = evt.nativeEvent.locationX;
+        const clamped = Math.max(0, Math.min(x, trackWidth.current));
+        onScrub(Math.round((clamped / trackWidth.current) * (frameCount - 1)));
+      },
+    }),
+  ).current;
+
+  const thumbPct = frameCount > 1 ? frameIndex / (frameCount - 1) : 0;
+
+  return (
+    <View style={scrubStyles.container}>
+      <Text style={scrubStyles.timeLabel}>{currentLabel}</Text>
+      <View style={scrubStyles.trackRow}>
+        <Text style={scrubStyles.endLabel}>9:00 PM</Text>
+        <View
+          style={scrubStyles.track}
+          onLayout={(e) => { trackWidth.current = e.nativeEvent.layout.width; }}
+          {...panResponder.panHandlers}>
+          <View style={scrubStyles.trackBg} pointerEvents="none" />
+          <View style={[scrubStyles.fill, { width: `${thumbPct * 100}%` as any }]} />
+          <View style={[scrubStyles.thumb, { left: `${thumbPct * 100}%` as any }]} />
+        </View>
+        <Text style={scrubStyles.endLabel}>9:30 PM</Text>
+      </View>
+    </View>
+  );
+}
+
+const scrubStyles = StyleSheet.create({
+  container: {
+    paddingHorizontal: space.base,
+    paddingBottom: space.base,
+    paddingTop: space.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.navy,
+  },
+  timeLabel: {
+    fontFamily: fonts.mono,
+    fontSize: 11,
+    color: colors.alertYellow,
+    letterSpacing: 1,
+    textAlign: 'center',
+    marginBottom: space.xs,
+  },
+  trackRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  endLabel: { fontFamily: fonts.mono, fontSize: 9, color: colors.textMuted, letterSpacing: 0.5 },
+  track: {
+    flex: 1,
+    height: 28,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  trackBg: {
+    position: 'absolute',
+    left: 0, right: 0,
+    height: 3,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+  },
+  fill: {
+    position: 'absolute',
+    left: 0,
+    height: 3,
+    backgroundColor: colors.alertYellow,
+    borderRadius: 2,
+  },
+  thumb: {
+    position: 'absolute',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.alertYellow,
+    top: '50%' as any,
+    marginTop: -9,
+    marginLeft: -9,
+  },
+});
+
 // ─── Main screen ─────────────────────────────────────────────────────────────
 
 export default function LiveScreen() {
@@ -245,7 +386,37 @@ export default function LiveScreen() {
   const [selectedDate, setSelectedDate] = useState(today);
   const isToday = selectedDate === today;
   const { data, error, isFetching, refetch } = useLiveGames(selectedDate, isToday);
-  const { live, upcoming, final } = useFilteredGames(data?.games);
+
+  // Sim mode
+  const simIsActive = useSimStore((s) => s.isActive);
+  const simFrames = useSimStore((s) => s.frames);
+  const simFrameIndex = useSimStore((s) => s.frameIndex);
+  const simActivate = useSimStore((s) => s.activate);
+  const simDeactivate = useSimStore((s) => s.deactivate);
+  const simSetFrameIndex = useSimStore((s) => s.setFrameIndex);
+  const simGames = useSimGames();
+
+  const tapCount = useRef(0);
+  const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleWordmarkTap = useCallback(() => {
+    tapCount.current += 1;
+    if (tapTimer.current) clearTimeout(tapTimer.current);
+    tapTimer.current = setTimeout(() => { tapCount.current = 0; }, 800);
+    if (tapCount.current >= 5) {
+      tapCount.current = 0;
+      if (tapTimer.current) clearTimeout(tapTimer.current);
+      if (!simIsActive) {
+        useSimStore.setState({ isLoading: true });
+        getSimReplay()
+          .then((replay) => simActivate(replay))
+          .catch(() => useSimStore.setState({ isLoading: false }));
+      }
+    }
+  }, [simIsActive, simActivate]);
+
+  const gamesForFilter = simIsActive ? simGames : data?.games;
+  const { live, upcoming, final } = useFilteredGames(gamesForFilter);
   const { bannerDismissed, permissionStatus, setBannerDismissed } = useNotificationsStore();
   const [showBanner, setShowBanner] = useState(false);
 
@@ -287,6 +458,13 @@ export default function LiveScreen() {
 
   const ListHeader = (
     <>
+      {simIsActive && simFrames.length > 0 && (
+        <SimBanner
+          label={simFrames[simFrameIndex]?.label ?? ''}
+          onExit={simDeactivate}
+        />
+      )}
+
       {/* Notification permission banner */}
       {showBanner && (
         <NotificationBanner onDismiss={() => void handleBannerDismiss()} />
@@ -353,10 +531,10 @@ export default function LiveScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       {/* Sticky header */}
       <View style={styles.header}>
-        <View>
+        <Pressable onPress={handleWordmarkTap}>
           <Text style={styles.wordmark}>SWING</Text>
-          <Text style={styles.subtitle}>LIVE</Text>
-        </View>
+          <Text style={styles.subtitle}>{simIsActive ? 'SIM MODE' : 'LIVE'}</Text>
+        </Pressable>
         <View style={styles.headerActions}>
           <Pressable
             style={styles.iconButton}
@@ -404,6 +582,15 @@ export default function LiveScreen() {
           />
         }
       />
+
+      {simIsActive && simFrames.length > 0 && (
+        <SimScrubber
+          frameIndex={simFrameIndex}
+          frameCount={simFrames.length}
+          currentLabel={simFrames[simFrameIndex]?.label ?? ''}
+          onScrub={simSetFrameIndex}
+        />
+      )}
     </SafeAreaView>
   );
 }
