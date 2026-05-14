@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
-import { View, Text, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { View, Text, FlatList, RefreshControl, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAlerts } from '@/features/alerts/hooks/useAlerts';
 import { AlertFilterPills } from '@/features/alerts/components/AlertFilterPills';
@@ -42,6 +43,7 @@ function EmptyState({ message }: { message: string }) {
 }
 
 export default function AlertsScreen() {
+  const router = useRouter();
   const { typeFilter, sportFilter, setTypeFilter } = useAlertFilterStore();
   const simIsActive = useSimStore((s) => s.isActive);
   const simAlerts = useSimAlerts();
@@ -107,9 +109,15 @@ export default function AlertsScreen() {
                   <>
                     <SectionHeader title="LIVE" count={liveAlerts.length} />
                     {liveAlerts.map((a) => (
-                      <View key={a.id} pointerEvents={simIsActive ? 'none' : 'auto'}>
-                        <LiveAlertCard alert={a} />
-                      </View>
+                      simIsActive ? (
+                        <Pressable key={a.id} onPress={() => router.push('/(tabs)/live')}>
+                          <View pointerEvents="none">
+                            <LiveAlertCard alert={a} />
+                          </View>
+                        </Pressable>
+                      ) : (
+                        <LiveAlertCard key={a.id} alert={a} />
+                      )
                     ))}
                   </>
                 )}
@@ -119,9 +127,15 @@ export default function AlertsScreen() {
                   <>
                     <SectionHeader title="EARLIER TODAY" count={finishedAlerts.length} />
                     {finishedAlerts.map((a) => (
-                      <View key={a.id} pointerEvents={simIsActive ? 'none' : 'auto'}>
-                        <FinishedAlertCard alert={a} />
-                      </View>
+                      simIsActive ? (
+                        <Pressable key={a.id} onPress={() => router.push('/(tabs)/live')}>
+                          <View pointerEvents="none">
+                            <FinishedAlertCard alert={a} />
+                          </View>
+                        </Pressable>
+                      ) : (
+                        <FinishedAlertCard key={a.id} alert={a} />
+                      )
                     ))}
                   </>
                 )}
