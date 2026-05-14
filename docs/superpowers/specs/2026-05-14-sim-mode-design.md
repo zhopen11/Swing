@@ -96,6 +96,46 @@ Sim frames produce the same `GameDetail` shape as the live API — `LiveGameCard
 
 ---
 
+## Alerts Tab in Sim Mode
+
+The alerts screen already splits into **LIVE** (alerts for in-progress games) and **EARLIER TODAY** (alerts for finished games). Sim mode maps onto this naturally — no new card components needed.
+
+### Alert events in the replay file
+
+The pre-compute script also queries `alert_logs` for March 20 alerts that fall within the 9:00–9:30 PM ET window and outputs them as a sorted `alertEvents` array alongside the frames:
+
+```json
+{
+  "alertEvents": [
+    {
+      "frameIndex": 3,
+      "simTime": "2026-03-20T21:03:00-04:00",
+      "id": "...",
+      "gameId": "...",
+      "type": "bluffing",
+      "awayAbbr": "PHX", "homeAbbr": "SA",
+      "awayScore": 49, "homeScore": 45,
+      "period": 2, "clock": "5:12",
+      "awayMomentum": 38, "homeMomentum": 62
+    }
+  ]
+}
+```
+
+### Derived state in sim store
+
+```ts
+firedAlerts = alertEvents.filter(e => e.frameIndex <= currentFrameIndex)
+```
+
+Each fired alert also needs a `result` field (used by the alerts screen to split LIVE vs EARLIER TODAY). This is derived by checking whether the alert's game has `STATUS_FINAL` in the current frame — if so `result = true`, otherwise `result = false`.
+
+### `alerts.tsx` change
+
+When sim is active, `useAlerts()` is bypassed and `firedAlerts` from the sim store is used instead. The LIVE / EARLIER TODAY split, filter pills, `LiveAlertCard`, and `FinishedAlertCard` all render without modification. The scrubber is shared with the live tab via the same sim store — both tabs stay in sync automatically.
+
+---
+
 ## Files Changed
 
 | File | Change |
@@ -105,6 +145,7 @@ Sim frames produce the same `GameDetail` shape as the live API — `LiveGameCard
 | `app/app/api/sim/route.js` | New — serves replay frames |
 | `apps/casual-fan-mobile/lib/store/sim.ts` | New — sim Zustand store |
 | `apps/casual-fan-mobile/app/(tabs)/live.tsx` | Modified — sim activation, banner, scrubber, conditional data source |
+| `apps/casual-fan-mobile/app/(tabs)/alerts.tsx` | Modified — conditional data source (sim store vs useAlerts hook) |
 
 ---
 
