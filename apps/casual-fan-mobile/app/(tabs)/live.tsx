@@ -312,6 +312,8 @@ function SimScrubber({
   ).current;
 
   const thumbPct = frameCount > 1 ? frameIndex / (frameCount - 1) : 0;
+  const fillWidth = `${(thumbPct * 100).toFixed(1)}%`;
+  const thumbLeft = `${(thumbPct * 100).toFixed(1)}%`;
 
   return (
     <View style={scrubStyles.container}>
@@ -323,8 +325,8 @@ function SimScrubber({
           onLayout={(e) => { trackWidth.current = e.nativeEvent.layout.width; }}
           {...panResponder.panHandlers}>
           <View style={scrubStyles.trackBg} pointerEvents="none" />
-          <View style={[scrubStyles.fill, { width: `${thumbPct * 100}%` as any }]} />
-          <View style={[scrubStyles.thumb, { left: `${thumbPct * 100}%` as any }]} />
+          <View style={[scrubStyles.fill, { width: fillWidth as any }]} />
+          <View style={[scrubStyles.thumb, { left: thumbLeft as any }]} />
         </View>
         <Text style={scrubStyles.endLabel}>9:30 PM</Text>
       </View>
@@ -377,8 +379,7 @@ const scrubStyles = StyleSheet.create({
     height: 18,
     borderRadius: 9,
     backgroundColor: colors.alertYellow,
-    top: '50%' as any,
-    marginTop: -9,
+    top: 5,
     marginLeft: -9,
   },
 });
