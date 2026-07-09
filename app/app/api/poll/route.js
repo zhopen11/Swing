@@ -3,6 +3,7 @@
 const {
   fetchNbaScoreboard,
   fetchCbbScoreboard,
+  fetchSlScoreboard,
   fetchGameSummary,
   parseScoreboardEvent,
   getPlaysFromSummary,
@@ -36,14 +37,16 @@ const HISTORICAL_CACHE_TTL = 5 * 60 * 1000; // 5 minutes for historical data
 export const dynamic = 'force-dynamic';
 
 async function buildPollData(dateStr) {
-  const [nbaEvents, cbbEvents] = await Promise.all([
+  const [nbaEvents, cbbEvents, slEvents] = await Promise.all([
     fetchNbaScoreboard(dateStr || undefined),
     fetchCbbScoreboard(dateStr || undefined),
+    fetchSlScoreboard(dateStr || undefined),
   ]);
 
   const allEvents = [
-    ...nbaEvents.map((e) => ({ ...e, league: 'NBA' })),
-    ...cbbEvents.map((e) => ({ ...e, league: 'CBB' })),
+    ...nbaEvents.map((e) => ({ ...e, league: 'NBA', isSummerLeague: false })),
+    ...cbbEvents.map((e) => ({ ...e, league: 'CBB', isSummerLeague: false })),
+    ...slEvents.map((e) => ({ ...e, league: 'NBA', isSummerLeague: true })),
   ];
 
   // Sort: live first, then upcoming, then final
@@ -60,7 +63,7 @@ async function buildPollData(dateStr) {
   );
 
   // Parse all events into game objects
-  const games = allEvents.map((e) => parseScoreboardEvent(e, e.league));
+  const games = allEvents.map((e) => parseScoreboardEvent(e, e.league, e.isSummerLeague));
 
   // Capture pregame odds to DB (once per game, never updated)
   // and load stored odds for all games in a single batch query
@@ -87,7 +90,7 @@ async function buildPollData(dateStr) {
       if (g.status === 'STATUS_FINAL' && finalMomCache.has(g.id)) {
         g.mom = finalMomCache.get(g.id);
       } else {
-        summary = await fetchGameSummary(g.id, g.league);
+        summary = await fetchGameSummary(g.id, g.league, g.isSummerLeague);
         plays = getPlaysFromSummary(summary);
         if (plays.length > 0) {
           g.mom = computeMomentumFromPlays(
@@ -114,7 +117,7 @@ async function buildPollData(dateStr) {
         g.swingers = swingImpactCache.get(g.id);
       } else if (g.mom) {
         try {
-          if (!summary) summary = await fetchGameSummary(g.id, g.league);
+          if (!summary) summary = await fetchGameSummary(g.id, g.league, g.isSummerLeague);
           if (!plays) plays = getPlaysFromSummary(summary);
           const si = computeGameSwingImpact(plays, summary, g);
           if (si) {
@@ -132,7 +135,7 @@ async function buildPollData(dateStr) {
 
     // Compute live MVIX for games with momentum data
     if (g.mom?.chartAway && g.mom?.chartHome) {
-      const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, g.league);
+      const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, g.league, g.quarterSecs);
       if (vol) {
         g.mvixAway = vol.away;
         g.mvixHome = vol.home;
@@ -221,7 +224,7 @@ async function recordGamesMvix(games) {
     if (isLive && mvixLiveRecorded.has(gameKey)) continue;
 
     try {
-      const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, g.league);
+      const vol = computeGameVolatility(g.mom.chartAway, g.mom.chartHome, g.league, g.quarterSecs);
       if (!vol?.away || !vol?.home) continue;
 
       const gameDate = g.gameDate || g.date?.slice(0, 10) || new Date().toISOString().slice(0, 10);
@@ -241,7 +244,7 @@ async function recordGamesMvix(games) {
         // Persist swing impact on finalization (non-fatal)
         try {
           if (g.swingers && !(await hasSwingImpact(g.id))) {
-            const fSummary = await fetchGameSummary(g.id, g.league).catch(() => null);
+            const fSummary = await fetchGameSummary(g.id, g.league, g.isSummerLeague).catch(() => null);
             const fPlays = fSummary ? getPlaysFromSummary(fSummary) : [];
             const si = fPlays.length ? computeGameSwingImpact(fPlays, fSummary, g) : null;
             if (si) {

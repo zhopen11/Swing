@@ -110,8 +110,24 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
     }}>
       {/* Top bar */}
       <div className="pb-3 mb-3 border-b border-black/5 flex justify-between items-center" style={{ position: 'relative' }}>
-        <span className="text-sm font-semibold text-[#6b7c93]">
+        <span className="text-sm font-semibold text-[#6b7c93]" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           {g.league} &middot; {g.shortName || g.name}
+          {g.isSummerLeague && (
+            <span style={{
+              fontSize: '10px',
+              fontWeight: 800,
+              letterSpacing: '0.06em',
+              color: '#fff',
+              background: '#1493ff',
+              border: '1px solid #0a7ae0',
+              borderRadius: '4px',
+              padding: '1px 5px',
+              lineHeight: '16px',
+              whiteSpace: 'nowrap',
+            }}>
+              SUMMER LEAGUE
+            </span>
+          )}
         </span>
         {g.network && (
           <span className="text-xs font-semibold text-[#8494a7]" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>{g.network}</span>
@@ -285,6 +301,7 @@ export default function GameCard({ game, user, subscribedGames, onToggleSubscrib
             league={g.league}
             mvixAway={g.mvixAway}
             mvixHome={g.mvixHome}
+            quarterMins={g.quarterSecs ? g.quarterSecs / 60 : undefined}
           />
           </div>
 

@@ -13,29 +13,29 @@ const { computeMomentumFromPlays } = require('../../../../lib/momentum');
 export const dynamic = 'force-dynamic';
 
 // Convert period + clock to total game seconds elapsed
-function gameSeconds(point, league) {
+function gameSeconds(point, league, quarterSecs) {
   const p = point.p || 1;
   const c = point.c || '0:00';
   const [m, s] = c.split(':').map(Number);
   const clockSecs = (m || 0) * 60 + (s || 0);
-  const periodSecs = league === 'NBA' ? 12 * 60 : 20 * 60;
+  const periodSecs = quarterSecs ?? (league === 'NBA' ? 12 * 60 : 20 * 60);
   return (p - 1) * periodSecs + (periodSecs - clockSecs);
 }
 
 // Compute first derivative (rate of change) using central differences
-function firstDerivative(chart, league) {
+function firstDerivative(chart, league, quarterSecs) {
   const result = [];
   for (let i = 0; i < chart.length; i++) {
-    const t = gameSeconds(chart[i], league);
+    const t = gameSeconds(chart[i], league, quarterSecs);
     let dv;
     if (i === 0 && chart.length > 1) {
-      const dt = gameSeconds(chart[i + 1], league) - t;
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - t;
       dv = dt > 0 ? (chart[i + 1].v - chart[i].v) / dt : 0;
     } else if (i === chart.length - 1) {
-      const dt = t - gameSeconds(chart[i - 1], league);
+      const dt = t - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i].v - chart[i - 1].v) / dt : 0;
     } else {
-      const dt = gameSeconds(chart[i + 1], league) - gameSeconds(chart[i - 1], league);
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i + 1].v - chart[i - 1].v) / dt : 0;
     }
     result.push({
@@ -81,21 +81,21 @@ function formatGameTime(secs) {
 }
 
 // Convert a scored play's period + clock to game seconds
-function playGameSeconds(play, league) {
+function playGameSeconds(play, league, quarterSecs) {
   const p = play.period || 1;
   const c = play.clock || '0:00';
   const [m, s] = c.split(':').map(Number);
   const clockSecs = (m || 0) * 60 + (s || 0);
-  const periodSecs = league === 'NBA' ? 12 * 60 : 20 * 60;
+  const periodSecs = quarterSecs ?? (league === 'NBA' ? 12 * 60 : 20 * 60);
   return (p - 1) * periodSecs + (periodSecs - clockSecs);
 }
 
 // Find the closest scored play index by game time
-function findClosestPlayIdx(scoredPlays, targetSecs, league) {
+function findClosestPlayIdx(scoredPlays, targetSecs, league, quarterSecs) {
   let closest = 0;
   let closestDist = Infinity;
   for (let i = 0; i < scoredPlays.length; i++) {
-    const dist = Math.abs(playGameSeconds(scoredPlays[i], league) - targetSecs);
+    const dist = Math.abs(playGameSeconds(scoredPlays[i], league, quarterSecs) - targetSecs);
     if (dist < closestDist) {
       closestDist = dist;
       closest = i;
@@ -105,7 +105,7 @@ function findClosestPlayIdx(scoredPlays, targetSecs, league) {
 }
 
 // Find inflection points where second derivative crosses zero
-function findInflections(analysis, scoredPlays, league) {
+function findInflections(analysis, scoredPlays, league, quarterSecs) {
   const inflections = [];
   for (let i = 1; i < analysis.length; i++) {
     const prev = analysis[i - 1].d2v;
@@ -116,7 +116,7 @@ function findInflections(analysis, scoredPlays, league) {
       // Find surrounding plays
       let plays = [];
       if (scoredPlays && scoredPlays.length > 0) {
-        const closestIdx = findClosestPlayIdx(scoredPlays, analysis[i].gameTime, league);
+        const closestIdx = findClosestPlayIdx(scoredPlays, analysis[i].gameTime, league, quarterSecs);
         const startIdx = Math.max(0, closestIdx - 3);
         const endIdx = Math.min(scoredPlays.length - 1, closestIdx + 3);
         plays = scoredPlays.slice(startIdx, endIdx + 1).map((p, j) => ({
@@ -294,16 +294,17 @@ export async function GET(request, { params }) {
 
     const { chartAway, chartHome, scoredPlays } = game.mom;
     const league = game.league;
+    const quarterSecs = game.quarterSecs;
 
     // Away team analysis
-    const awayD1 = firstDerivative(chartAway, league);
+    const awayD1 = firstDerivative(chartAway, league, quarterSecs);
     const awayD2 = secondDerivative(awayD1);
-    const awayInflections = findInflections(awayD2, scoredPlays, league);
+    const awayInflections = findInflections(awayD2, scoredPlays, league, quarterSecs);
 
     // Home team analysis
-    const homeD1 = firstDerivative(chartHome, league);
+    const homeD1 = firstDerivative(chartHome, league, quarterSecs);
     const homeD2 = secondDerivative(homeD1);
-    const homeInflections = findInflections(homeD2, scoredPlays, league);
+    const homeInflections = findInflections(homeD2, scoredPlays, league, quarterSecs);
 
     // Current state summary
     const awayLast = awayD2[awayD2.length - 1];

@@ -1,27 +1,27 @@
 /** Compute MVIX and MRVI volatility metrics from momentum chart data. */
 
-function gameSeconds(point, league) {
+function gameSeconds(point, league, quarterSecs) {
   const p = point.p || 1;
   const c = point.c || '0:00';
   const [m, s] = c.split(':').map(Number);
   const clockSecs = (m || 0) * 60 + (s || 0);
-  const periodSecs = league === 'NBA' ? 12 * 60 : 20 * 60;
+  const periodSecs = quarterSecs ?? (league === 'NBA' ? 12 * 60 : 20 * 60);
   return (p - 1) * periodSecs + (periodSecs - clockSecs);
 }
 
-function firstDerivative(chart, league) {
+function firstDerivative(chart, league, quarterSecs) {
   const result = [];
   for (let i = 0; i < chart.length; i++) {
-    const t = gameSeconds(chart[i], league);
+    const t = gameSeconds(chart[i], league, quarterSecs);
     let dv;
     if (i === 0 && chart.length > 1) {
-      const dt = gameSeconds(chart[i + 1], league) - t;
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - t;
       dv = dt > 0 ? (chart[i + 1].v - chart[i].v) / dt : 0;
     } else if (i === chart.length - 1) {
-      const dt = t - gameSeconds(chart[i - 1], league);
+      const dt = t - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i].v - chart[i - 1].v) / dt : 0;
     } else {
-      const dt = gameSeconds(chart[i + 1], league) - gameSeconds(chart[i - 1], league);
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i + 1].v - chart[i - 1].v) / dt : 0;
     }
     result.push({ gameTime: t, v: chart[i].v, dv: Math.round(dv * 1000) / 1000 });
@@ -120,11 +120,11 @@ function computeMRVI(chart, stdPeriod = 8, smoothPeriod = 14) {
  * Compute MVIX volatility object from chart data.
  * Returns null if insufficient data.
  */
-export function computeGameVolatility(chartAway, chartHome, league) {
+export function computeGameVolatility(chartAway, chartHome, league, quarterSecs) {
   if (!chartAway || !chartHome || chartAway.length < 3 || chartHome.length < 3) return null;
 
   function compute(chart) {
-    const d1 = firstDerivative(chart, league);
+    const d1 = firstDerivative(chart, league, quarterSecs);
     const d2 = secondDerivative(d1);
     const { up, down } = countInflections(d2);
     const n = d1.length;

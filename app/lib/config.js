@@ -7,10 +7,18 @@ module.exports = {
   NBA_SCOREBOARD: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard',
   CBB_SCOREBOARD:
     'https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard',
+  SL_SCOREBOARD: 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba-summer-las-vegas/scoreboard',
   NBA_SUMMARY: (id) =>
     `https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=${id}`,
   CBB_SUMMARY: (id) =>
     `https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event=${id}`,
+  SL_SUMMARY: (id) =>
+    `https://site.api.espn.com/apis/site/v2/sports/basketball/nba-summer-las-vegas/summary?event=${id}`,
+
+  // Quarter durations in seconds
+  NBA_QUARTER_SECS: 720,   // 12 minutes
+  SL_QUARTER_SECS: 600,    // 10 minutes (Summer League)
+  CBB_PERIOD_SECS: 1200,   // 20-minute halves
 
   // Momentum engine
   WINDOW: 12,

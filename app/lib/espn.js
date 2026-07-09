@@ -1,6 +1,6 @@
 /** The Swing — ESPN API client. */
 
-const { NBA_SCOREBOARD, CBB_SCOREBOARD, NBA_SUMMARY, CBB_SUMMARY } = require('./config');
+const { NBA_SCOREBOARD, CBB_SCOREBOARD, SL_SCOREBOARD, NBA_SUMMARY, CBB_SUMMARY, SL_SUMMARY, NBA_QUARTER_SECS, SL_QUARTER_SECS, CBB_PERIOD_SECS } = require('./config');
 
 // Convert a UTC ISO timestamp to YYYY-MM-DD in Eastern Time.
 // Prevents late games (e.g. 2026-04-20T01:00Z = 9pm ET April 19) from being
@@ -124,12 +124,21 @@ async function fetchCbbScoreboard(dateStr) {
   return data?.events || [];
 }
 
-async function fetchGameSummary(gameId, league) {
-  const url = league === 'NBA' ? NBA_SUMMARY(gameId) : CBB_SUMMARY(gameId);
+async function fetchSlScoreboard(dateStr) {
+  const url = dateStr ? `${SL_SCOREBOARD}?dates=${dateStr}` : SL_SCOREBOARD;
+  const data = await fetchJSON(url);
+  return data?.events || [];
+}
+
+async function fetchGameSummary(gameId, league, isSummerLeague = false) {
+  let url;
+  if (isSummerLeague) url = SL_SUMMARY(gameId);
+  else if (league === 'NBA') url = NBA_SUMMARY(gameId);
+  else url = CBB_SUMMARY(gameId);
   return fetchJSON(url);
 }
 
-function parseScoreboardEvent(event, league) {
+function parseScoreboardEvent(event, league, isSummerLeague = false) {
   const comp = event.competitions?.[0] || {};
   const competitors = comp.competitors || [];
 
@@ -188,6 +197,8 @@ function parseScoreboardEvent(event, league) {
     } : null,
     network,
     venue,
+    isSummerLeague,
+    quarterSecs: isSummerLeague ? SL_QUARTER_SECS : (league === 'NBA' ? NBA_QUARTER_SECS : CBB_PERIOD_SECS),
     mom: null,
   };
 }
@@ -203,6 +214,7 @@ module.exports = {
   fetchJSON,
   fetchNbaScoreboard,
   fetchCbbScoreboard,
+  fetchSlScoreboard,
   fetchGameSummary,
   parseScoreboardEvent,
   getPlaysFromSummary,

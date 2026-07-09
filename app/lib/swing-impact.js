@@ -118,27 +118,27 @@ function computePlayerVolatility(plays) {
   return { mvix: mvixResult.mvix, mrvi, combo };
 }
 
-function gameSeconds(point, league) {
+function gameSeconds(point, league, quarterSecs) {
   const p = point.p || 1;
   const c = point.c || '0:00';
   const [m, s] = c.split(':').map(Number);
-  const periodSecs = league === 'NBA' ? 12 * 60 : 20 * 60;
+  const periodSecs = quarterSecs ?? (league === 'NBA' ? 12 * 60 : 20 * 60);
   return (p - 1) * periodSecs + (periodSecs - ((m || 0) * 60 + (s || 0)));
 }
 
-function findInflections(chart, league) {
+function findInflections(chart, league, quarterSecs) {
   const d1 = [];
   for (let i = 0; i < chart.length; i++) {
-    const t = gameSeconds(chart[i], league);
+    const t = gameSeconds(chart[i], league, quarterSecs);
     let dv;
     if (i === 0 && chart.length > 1) {
-      const dt = gameSeconds(chart[i + 1], league) - t;
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - t;
       dv = dt > 0 ? (chart[i + 1].v - chart[i].v) / dt : 0;
     } else if (i === chart.length - 1) {
-      const dt = t - gameSeconds(chart[i - 1], league);
+      const dt = t - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i].v - chart[i - 1].v) / dt : 0;
     } else {
-      const dt = gameSeconds(chart[i + 1], league) - gameSeconds(chart[i - 1], league);
+      const dt = gameSeconds(chart[i + 1], league, quarterSecs) - gameSeconds(chart[i - 1], league, quarterSecs);
       dv = dt > 0 ? (chart[i + 1].v - chart[i - 1].v) / dt : 0;
     }
     d1.push({ gameTime: t, v: chart[i].v, dv, idx: i });
@@ -407,8 +407,8 @@ function computeGameSwingImpact(plays, summary, game) {
 
   if (chartAway.length < 3 || chartHome.length < 3) return null;
 
-  const awayInflections = findInflections(chartAway, game.league);
-  const homeInflections = findInflections(chartHome, game.league);
+  const awayInflections = findInflections(chartAway, game.league, game.quarterSecs);
+  const homeInflections = findInflections(chartHome, game.league, game.quarterSecs);
 
   const awayResult = computeSwingImpact(awayInflections, batchPlays, game.awayAbbr, game.league);
   const homeResult = computeSwingImpact(homeInflections, batchPlays, game.homeAbbr, game.league);

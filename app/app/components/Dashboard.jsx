@@ -221,23 +221,18 @@ export default function Dashboard() {
   // Estimate time remaining for sorting (lower = closer to ending)
   function timeRemaining(g) {
     if (g.status === 'STATUS_FINAL') return -1;
-    if (g.status === 'STATUS_HALFTIME') {
-      // NBA: 2 quarters left; CBB: 1 half left; NHL intermission: 1+ period left
-      const totalPeriods = g.league === 'NBA' ? 4 : g.league === 'NHL' ? 3 : 2;
-      const periodsLeft = totalPeriods - g.period;
-      const mins = g.league === 'NBA' ? 12 : 20;
-      return periodsLeft * mins * 60;
-    }
     const totalPeriods = g.league === 'NBA' ? 4 : g.league === 'NHL' ? 3 : 2;
-    const periodMins = g.league === 'NBA' ? 12 : 20;
+    const periodSecs = g.quarterSecs ?? (g.league === 'NBA' ? 720 : g.league === 'NHL' ? 1200 : 1200);
+    if (g.status === 'STATUS_HALFTIME') {
+      return (totalPeriods - g.period) * periodSecs;
+    }
     const periodsLeft = Math.max(0, totalPeriods - g.period);
-    // Parse clock "7:13" to seconds
     let clockSecs = 0;
     if (g.clock && typeof g.clock === 'string' && g.clock.includes(':')) {
       const [m, s] = g.clock.split(':').map(Number);
       clockSecs = (m || 0) * 60 + (s || 0);
     }
-    return periodsLeft * periodMins * 60 + clockSecs;
+    return periodsLeft * periodSecs + clockSecs;
   }
 
   // Sort by league (CBB first) then by time remaining within each league

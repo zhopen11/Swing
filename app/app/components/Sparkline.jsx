@@ -16,7 +16,7 @@ function formatGameTime(point, league) {
   return `${label} ${c}`;
 }
 
-export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, awayAbbr, homeAbbr, isLive, league, mvixAway, mvixHome }) {
+export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, awayAbbr, homeAbbr, isLive, league, mvixAway, mvixHome, quarterMins }) {
   const [tooltip, setTooltip] = useState(null);
   const svgRef = useRef(null);
   const tooltipTimer = useRef(null);
@@ -55,8 +55,7 @@ export default function Sparkline({ chartAway, chartHome, awayColor, homeColor, 
     const c = point.c || '0:00';
     const [m, s] = c.split(':').map(Number);
     const clockSecs = (m || 0) * 60 + (s || 0);
-    // NBA: 12-min quarters, CBB: 20-min halves
-    const periodMins = league === 'NBA' ? 12 : 20;
+    const periodMins = quarterMins ?? (league === 'NBA' ? 12 : 20);
     const periodSecs = periodMins * 60;
     // Clock counts down, so elapsed in current period = periodSecs - clockSecs
     return (p - 1) * periodSecs + (periodSecs - clockSecs);
